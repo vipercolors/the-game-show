@@ -1,0 +1,89 @@
+[
+  {
+    "id": "c15qix1",
+    "name": "Game night",
+    "categories": [
+      "burgerChain",
+      "iceCreamFlavor",
+      "cookieBrand",
+      "hotSauce",
+      "waterBrand",
+      "candyBar",
+      "restaurantChain",
+      "sportsTeam",
+      "famousAthlete",
+      "sportsLeague",
+      "videoGameCompany",
+      "boardGame",
+      "sneakerBrand",
+      "gumBrand",
+      "holiday"
+    ],
+    "answerCount": 4,
+    "createdAt": "2026-06-17T04:49:43.189Z"
+  },
+  {
+    "id": "e5oj80e",
+    "name": "Game Show",
+    "categories": [
+      "cerealMascot",
+      "themePark",
+      "musicDecade",
+      "hotSauce",
+      "mexicanFastFood",
+      "cake",
+      "sneakerBrand",
+      "fountainDrink",
+      "fruit",
+      "candyBar",
+      "boardGame"
+    ],
+    "answerCount": 4,
+    "createdAt": "2026-06-20T05:43:35.345Z"
+  },
+  {
+    "id": "e90ekoe",
+    "name": "The cool one",
+    "categories": [
+      "pizzaChain",
+      "cake",
+      "breakfastFood",
+      "friedChickenPlace"
+    ],
+    "answerCount": 4,
+    "answerMap": {
+      "pizzaChain": [
+        "Domino's",
+        "Pizza Hut",
+        "Little Caesars",
+        "Papa John's",
+        "Papa Murphy's"
+      ],
+      "cake": [
+        "Chocolate Cake",
+        "Vanilla Cake",
+        "Red Velvet",
+        "Cheesecake",
+        "Ice Cream Cake"
+      ],
+      "breakfastFood": [
+        "Pancakes",
+        "Waffles",
+        "French Toast",
+        "Bacon",
+        "Eggs"
+      ],
+      "friedChickenPlace": [
+        "Popeyes",
+        "KFC",
+        "Chick-fil-A",
+        "Raising Cane's",
+        "Church's Chicken",
+        "Dave's Hot Chicken",
+        "Jollibee",
+        "Wingstop"
+      ]
+    },
+    "createdAt": "2026-06-24T22:03:59.532Z"
+  }
+]

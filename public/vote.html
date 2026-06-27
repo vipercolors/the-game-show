@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Vote — The Game Show</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { min-height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3.5rem 1rem 1.5rem; }
+    #code-entry, #waiting, #voted, #question-area { width:100%; max-width:420px; text-align:center; }
+
+    .code-input { font-size:2rem; font-weight:900; letter-spacing:.3em; text-align:center; padding:.75rem 1rem; background:var(--bg2); border:2px solid var(--border); border-radius:12px; color:var(--text); font-family:'Playfair Display',serif; width:100%; }
+    .code-input:focus { outline:none; border-color:var(--purple); box-shadow:0 0 0 4px rgba(139,92,246,.2); }
+    .code-input.error { border-color:var(--red); animation:shake .4s ease-out; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
+
+    /* Result bars */
+    .r-row { display:flex; align-items:center; gap:.6rem; margin-bottom:.6rem; text-align:left; }
+    .r-name { flex:1; font-size:.85rem; font-weight:500; }
+    .r-pct  { font-weight:700; color:var(--amber); min-width:3rem; text-align:right; }
+    .r-track{ height:12px; background:var(--bg2); border-radius:99px; flex:0 0 80px; overflow:hidden; border:1px solid var(--border); }
+    .r-fill { height:100%; border-radius:99px; transition:width 1.2s cubic-bezier(.22,.68,0,1.2); }
+    .r-fill.opt-0 { background:linear-gradient(90deg,#8b5cf6,#c4b5fd); }
+    .r-fill.opt-1 { background:linear-gradient(90deg,#ec4899,#fbcfe8); }
+    .r-fill.opt-2 { background:linear-gradient(90deg,#22d3ee,#a5f3fc); }
+    .r-fill.opt-3 { background:linear-gradient(90deg,#4ade80,#bbf7d0); }
+    .r-fill.opt-4 { background:linear-gradient(90deg,#f97316,#fed7aa); }
+    .r-fill.opt-5 { background:linear-gradient(90deg,#a855f7,#e9d5ff); }
+    .r-fill.opt-6 { background:linear-gradient(90deg,#14b8a6,#99f6e4); }
+    .r-fill.opt-7 { background:linear-gradient(90deg,#eab308,#fef08a); }
+
+    /* Waiting notes */
+    .waiting-notes { display:flex; align-items:center; justify-content:center; gap:.9rem; margin-bottom:1.2rem; }
+    .waiting-note { font-size:1.6rem; color:var(--purple-lt); animation: noteBounce 1.6s ease-in-out infinite; }
+    .waiting-note:nth-child(2) { color:var(--pink); animation-delay:.25s; font-size:1.2rem; }
+    .waiting-note:nth-child(3) { color:var(--cyan); animation-delay:.5s; font-size:1.4rem; }
+    @keyframes noteBounce { 0%,100% { transform: translateY(0) scale(1); opacity:.6; } 50% { transform: translateY(-8px) scale(1.15); opacity:1; } }
+
+    /* Full-screen vote celebration */
+    #vote-celebration {
+      position:fixed; inset:0; z-index:150;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .25s;
+    }
+    #vote-celebration.show { opacity:1; pointer-events:all; }
+    .cel-letter {
+      font-family:'Playfair Display',serif; font-size:clamp(5rem,25vw,9rem);
+      font-weight:900; line-height:1;
+      animation:celebPop .6s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes celebPop { from{transform:scale(.2) rotate(-12deg);opacity:0} 60%{transform:scale(1.18) rotate(3deg);opacity:1} to{transform:scale(1) rotate(0);opacity:1} }
+    .cel-text { font-weight:800; font-size:1.5rem; margin-top:.75rem; opacity:0; animation:wsFade .4s .5s ease-out forwards; }
+    .cel-sub  { font-size:.9rem; margin-top:.3rem; opacity:.75; opacity:0; animation:wsFade .4s .7s ease-out forwards; }
+    @keyframes wsFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+    /* Mini confetti on vote */
+    .cel-particle {
+      position:absolute; border-radius:50%; pointer-events:none;
+      animation:particleBurst .9s ease-out forwards;
+    }
+    @keyframes particleBurst {
+      from { transform:translate(0,0) scale(1); opacity:1; }
+      to   { transform:translate(var(--tx),var(--ty)) scale(0); opacity:0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div style="position:fixed;top:0;left:0;right:0;z-index:60;padding:.55rem 1rem;background:rgba(9,9,11,.9);border-bottom:1px solid #27272a;display:flex;align-items:center;gap:.75rem;backdrop-filter:blur(8px)">
+    <span style="font-family:'Playfair Display',serif;font-weight:900;font-size:.95rem;color:#fff">The Show<span style="color:#a78bfa">.</span></span>
+    <span style="margin-left:auto;font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#71717a">Audience</span>
+  </div>
+
+  <!-- TIMER BAR (top) — sits just below the nav bar -->
+  <div id="timer-bar-wrap" class="hidden" style="position:fixed;top:36px;left:0;right:0;z-index:55">
+    <div id="timer-bar" style="height:5px;background:var(--green);width:100%;transition:width .9s linear,background .5s"></div>
+    <div id="timer-bar-num" style="position:absolute;right:.75rem;top:.35rem;font-size:.72rem;font-weight:700;color:var(--text);opacity:.7"></div>
+  </div>
+
+  <!-- FULL-SCREEN VOTE CELEBRATION -->
+  <div id="vote-celebration">
+    <div id="cel-particles" style="position:absolute;inset:0;overflow:hidden;pointer-events:none"></div>
+    <div class="cel-letter" id="cel-letter">A</div>
+    <div class="cel-text" id="cel-text">Vote locked in!</div>
+    <div class="cel-sub"  id="cel-sub">Waiting for results…</div>
+  </div>
+
+  <!-- CODE ENTRY -->
+  <div id="code-entry">
+    <div class="wordmark" style="font-size:2.4rem;text-align:center">The Show<span class="accent">.</span></div>
+    <p class="text-muted mt-2" style="font-size:.88rem;line-height:1.7;text-align:center">You're in the audience.<br>Enter the code shown on the <strong style="color:var(--text)">big screen</strong>.</p>
+    <div class="mt-4" style="display:flex;flex-direction:column;gap:.75rem">
+      <input class="code-input" type="text" id="code-input" maxlength="4" placeholder="0000" inputmode="numeric" autocomplete="off">
+      <button class="btn btn-primary btn-lg btn-block" onclick="enterCode()">Join →</button>
+    </div>
+    <p id="code-error" class="text-red mt-2 hidden" style="font-size:.85rem;font-weight:600">Wrong code — try again.</p>
+  </div>
+
+  <!-- WAITING -->
+  <div id="waiting" class="hidden" style="text-align:center;width:100%;max-width:420px">
+    <div class="waiting-notes">
+      <span class="waiting-note">?</span>
+      <span class="waiting-note">?</span>
+      <span class="waiting-note">?</span>
+    </div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--purple-lt)">You're in!</h2>
+    <p class="text-muted mt-2" style="font-size:.9rem;line-height:1.6">Waiting for the next question…</p>
+    <!-- Audience vote total while waiting -->
+    <div id="waiting-total" class="hidden mt-3" style="font-size:.82rem;color:var(--muted)">
+      <span id="waiting-total-num" style="font-weight:700;color:var(--green)">0</span> people in the audience
+    </div>
+  </div>
+
+  <!-- QUESTION OPEN -->
+  <div id="question-area" class="hidden" style="width:100%;max-width:420px">
+    <div id="modifier-banner-vote" class="hidden modifier-banner"></div>
+    <div style="font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.85rem">Pick your favourite</div>
+    <div id="q-text" class="question-text" style="font-size:clamp(1.1rem,4vw,1.5rem);text-align:left"></div>
+    <div id="options-container" class="mt-4" style="display:flex;flex-direction:column;gap:.6rem"></div>
+  </div>
+
+  <!-- VOTED -->
+  <div id="voted" class="hidden" style="text-align:center;width:100%;max-width:420px">
+    <div id="voted-badge" class="vote-confirmed-badge"></div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900">Vote locked in!</h2>
+    <p id="voted-choice" style="font-weight:700;font-size:1.15rem;margin-top:.5rem"></p>
+    <p class="text-muted mt-2" style="font-size:.88rem;line-height:1.6">Waiting for the host to reveal results…</p>
+    <div id="result-reveal" class="hidden mt-4">
+      <hr class="divider">
+      <div class="col-title text-center" style="margin-bottom:.75rem">Results</div>
+      <div id="r-bars"></div>
+      <p class="text-muted mt-3" style="font-size:.82rem" id="your-pts-note"></p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="wheel-segments.js"></script>
+  <script src="sounds.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io({ query: { role: 'audience' } });
+    let myVote = null, hasVoted = false, authorized = false;
+    let lastQuestion = null, audienceCount = 0;
+    let lastKnownCode = null;
+
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    const LETTERS = ['A','B','C','D','E','F','G','H'];
+    const COLORS  = ['#8b5cf6','#ec4899','#22d3ee','#4ade80','#f97316','#a855f7','#14b8a6','#eab308'];
+
+    function show(id) {
+      ['code-entry','waiting','question-area','voted'].forEach(s => document.getElementById(s).classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function enterCode() {
+      const val = document.getElementById('code-input').value.trim();
+      socket.emit('audience:enter-code', val);
+    }
+
+    socket.on('code-accepted', () => {
+      authorized = true;
+      document.getElementById('code-error').classList.add('hidden');
+      show('waiting');
+    });
+
+    socket.on('code-rejected', () => {
+      const input = document.getElementById('code-input');
+      input.classList.add('error');
+      document.getElementById('code-error').classList.remove('hidden');
+      setTimeout(() => input.classList.remove('error'), 500);
+    });
+
+    socket.on('vote-tick', ({ total }) => {
+      audienceCount = total;
+      const el = document.getElementById('waiting-total-num');
+      if (el) el.textContent = total;
+    });
+
+    let timerBarInterval = null;
+
+    function startTimerBar(duration, startTs) {
+      document.getElementById('timer-bar-wrap').classList.remove('hidden');
+      clearInterval(timerBarInterval);
+      timerBarInterval = setInterval(() => {
+        const remaining = Math.max(0, duration - (Date.now() - startTs) / 1000);
+        const pct = (remaining / duration) * 100;
+        const bar = document.getElementById('timer-bar');
+        bar.style.width = pct + '%';
+        bar.style.background = pct > 50 ? 'var(--green)' : pct > 25 ? 'var(--amber)' : 'var(--red)';
+        document.getElementById('timer-bar-num').textContent = Math.ceil(remaining) + 's';
+
+        // Urgency: flash/shake the option buttons when < 5s
+        if (remaining <= 5 && remaining > 0) {
+          document.querySelectorAll('.option-btn:not(:disabled)').forEach(b => {
+            b.style.animation = 'none';
+            b.offsetHeight;
+            b.style.animation = 'timerUrgency .4s ease-in-out';
+          });
+        }
+
+        if (remaining <= 0) clearInterval(timerBarInterval);
+      }, 250);
+    }
+
+    function stopTimerBar() {
+      clearInterval(timerBarInterval);
+      document.getElementById('timer-bar-wrap').classList.add('hidden');
+    }
+
+    function renderModifierBanner(modifier) {
+      const el = document.getElementById('modifier-banner-vote');
+      if (!modifier) { el.classList.add('hidden'); return; }
+      const info = window.MODIFIER_INFO?.[modifier];
+      if (!info) { el.classList.add('hidden'); return; }
+      el.classList.remove('hidden');
+      el.style.background = info.color + '18';
+      el.style.borderColor = info.color + '45';
+      el.style.color = '#fff';
+      el.innerHTML = `<span class="mod-emoji">${info.badge}</span> <strong style="color:${info.color}">${info.label}</strong> — ${info.desc}`;
+    }
+
+    let prevPhase = null;
+    socket.on('state', s => {
+      // If the host generated a new code while we were authorized, force re-entry
+      if (authorized && s.code && s.code !== lastKnownCode) {
+        authorized = false; hasVoted = false; myVote = null; stopTimerBar();
+        show('code-entry');
+      }
+      if (s.code !== undefined) lastKnownCode = s.code || null;
+      if (!authorized) return;
+      if (s.question) lastQuestion = s.question;
+
+      // Update audience count
+      document.getElementById('waiting-total').classList.toggle('hidden', !s.voterCount);
+      document.getElementById('waiting-total-num').textContent = s.voterCount || 0;
+
+      if (s.phase === 'lobby') {
+        show('waiting'); hasVoted = false; myVote = null; stopTimerBar();
+      } else if (s.phase === 'voting') {
+        if (prevPhase !== 'voting') {
+          window.Sounds?.voteOpen();
+          // Reset vote state when freshly entering voting (handles revealed→voting shortcut)
+          hasVoted = false; myVote = null;
+        }
+        if (s.timerDuration > 0 && s.timerStart) startTimerBar(s.timerDuration, s.timerStart);
+        if (hasVoted) { show('voted'); document.getElementById('result-reveal').classList.add('hidden'); }
+        else { show('question-area'); renderQ(s.question); renderModifierBanner(s.modifier); }
+      } else if (s.phase === 'closed') {
+        stopTimerBar();
+        document.getElementById('result-reveal').classList.add('hidden');
+        if (!hasVoted) show('waiting');
+      } else if (s.phase === 'revealed') {
+        stopTimerBar(); show('voted'); renderResults(s.results, s.question, s.scoreMultiplier);
+      } else {
+        stopTimerBar(); show('waiting');
+      }
+      prevPhase = s.phase;
+    });
+
+    socket.on('vote-confirmed', option => {
+      myVote = option; hasVoted = true;
+
+      // Vibrate on mobile
+      if (navigator.vibrate) navigator.vibrate([60, 30, 80]);
+
+      const i = lastQuestion?.options?.indexOf(option) ?? -1;
+      const color  = i >= 0 ? COLORS[i % COLORS.length]   : '#8b5cf6';
+      const letter = i >= 0 ? LETTERS[i % LETTERS.length] : '?';
+
+      // Full-screen celebration
+      showVoteCelebration(letter, color, option);
+
+      // Then show the voted view
+      setTimeout(() => {
+        show('voted');
+        window.Sounds?.resultReveal();
+        document.getElementById('result-reveal').classList.add('hidden');
+
+        const badge = document.getElementById('voted-badge');
+        badge.style.background = color + '20';
+        badge.style.border     = `3px solid ${color}60`;
+        badge.style.color      = color;
+        badge.style.animation  = 'none'; badge.offsetHeight; badge.style.animation = '';
+        badge.textContent = letter;
+
+        const choiceEl = document.getElementById('voted-choice');
+        choiceEl.textContent = option;
+        choiceEl.style.color = color;
+      }, 1400);
+    });
+
+    function showVoteCelebration(letter, color, option) {
+      const overlay = document.getElementById('vote-celebration');
+      overlay.style.background = color + '22';
+
+      const letterEl = document.getElementById('cel-letter');
+      letterEl.textContent = letter;
+      letterEl.style.color = color;
+      letterEl.style.textShadow = `0 0 60px ${color}`;
+      letterEl.style.animation = 'none'; letterEl.offsetHeight; letterEl.style.animation = '';
+
+      document.getElementById('cel-text').textContent = option;
+      document.getElementById('cel-sub').textContent  = 'Vote locked in!';
+
+      // Mini particles burst
+      const particles = document.getElementById('cel-particles');
+      particles.innerHTML = '';
+      for (let i = 0; i < 20; i++) {
+        const p = document.createElement('div');
+        p.className = 'cel-particle';
+        const size = 6 + Math.random() * 14;
+        const angle = Math.random() * 360;
+        const dist  = 80 + Math.random() * 160;
+        p.style.cssText = `width:${size}px;height:${size}px;background:${color};border-radius:${Math.random()>.5?'50%':'3px'};left:calc(50% - ${size/2}px);top:calc(50% - ${size/2}px);--tx:${Math.cos(angle*Math.PI/180)*dist}px;--ty:${Math.sin(angle*Math.PI/180)*dist}px;animation-delay:${Math.random()*.2}s;`;
+        particles.appendChild(p);
+      }
+
+      overlay.classList.add('show');
+      setTimeout(() => {
+        overlay.classList.remove('show');
+      }, 1300);
+    }
+
+    function renderQ(q) {
+      if (!q) return;
+      lastQuestion = q;
+      document.getElementById('q-text').textContent = q.text;
+      const container = document.getElementById('options-container');
+      container.innerHTML = '';
+      q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = `option-btn opt-${i}`;
+        btn.style.animationDelay = `${i * 70}ms`;
+        const c = COLORS[i % COLORS.length], l = LETTERS[i % LETTERS.length];
+        btn.innerHTML = `<span class="opt-letter" style="background:${c}20;color:${c};border:2px solid ${c}40">${l}</span><span>${esc(opt)}</span>`;
+        btn.onclick = () => {
+          document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+          socket.emit('vote', opt);
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function renderResults(results, question, scoreMultiplier) {
+      if (!results || !question) return;
+      document.getElementById('result-reveal').classList.remove('hidden');
+      const bars = document.getElementById('r-bars');
+      bars.innerHTML = '';
+      question.options.forEach((opt, i) => {
+        const r = results[opt] || { pct: 0, count: 0, points: 0 };
+        const row = document.createElement('div');
+        row.className = 'r-row';
+        row.innerHTML = `
+          <span class="r-name">${esc(opt)}${opt === myVote ? ' <strong style="color:var(--purple-lt)">← you</strong>' : ''}</span>
+          <div class="r-track"><div class="r-fill opt-${i}" data-pct="${r.pct}" style="width:0%"></div></div>
+          <span class="r-pct">${r.pct}%</span>`;
+        bars.appendChild(row);
+      });
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        bars.querySelectorAll('.r-fill').forEach(el => { el.style.width = el.dataset.pct + '%'; });
+      }));
+      if (myVote && results[myVote]) {
+        const mult = scoreMultiplier || 1;
+        const earnedPts = Math.round(results[myVote].points * mult);
+        const multNote = mult > 1 ? ` (×${mult})` : '';
+        document.getElementById('your-pts-note').textContent =
+          `Your pick got ${results[myVote].pct}%${multNote} — contestants who chose it earn ${earnedPts} pts.`;
+      }
+    }
+
+    document.getElementById('code-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') enterCode();
+    });
+  </script>
+  <style>
+    @keyframes timerUrgency {
+      0%,100%{transform:none} 25%{transform:scale(1.03)} 75%{transform:scale(.98)}
+    }
+  </style>
+</body>
+</html>

@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Display — The Game Show</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <style>
+    html, body { height: 100%; overflow: hidden; }
+    body { display: flex; align-items: center; justify-content: center; background: #09090b; }
+
+    .screen {
+      width: 100vw; height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; position: absolute;
+      inset: 0; padding: 2rem; text-align: center;
+    }
+    .screen-enter { animation: scrEnter .5s cubic-bezier(.22,.68,0,1.2) both; }
+    .screen-exit  { animation: scrExit  .3s ease-in both; }
+    @keyframes scrEnter { from{opacity:0;transform:scale(.97)} to{opacity:1;transform:none} }
+    @keyframes scrExit  { from{opacity:1;transform:none} to{opacity:0;transform:scale(.97)} }
+
+    /* ── CORNERS ── */
+    #round-corner  { position:fixed; top:1.2rem; left:1.2rem; z-index:60; }
+    #modifier-corner { position:fixed; top:1.2rem; right:1.2rem; z-index:60; padding:.45rem 1.1rem; border-radius:10px; font-weight:700; font-size:.9rem; border:1px solid; }
+    #audience-corner { position:fixed; bottom:1.2rem; left:1.2rem; z-index:60; }
+
+    /* ── SLAM / WHEEL RESULT ── */
+    #wheel-slam {
+      position:fixed; inset:0; z-index:200;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .35s;
+    }
+    #wheel-slam.active { opacity:1; pointer-events:all; cursor:pointer; }
+    #ws-particles { position:absolute; inset:0; overflow:hidden; }
+    .ws-particle { position:absolute; border-radius:50%; animation:particleFly 2s ease-out forwards; }
+    @keyframes particleFly {
+      from { transform:translate(0,0) scale(1); opacity:.9; }
+      to   { transform:translate(var(--tx),var(--ty)) scale(0); opacity:0; }
+    }
+    #ws-type {
+      font-size:clamp(1rem,2.2vw,1.5rem); font-weight:900; letter-spacing:.25em;
+      text-transform:uppercase; opacity:0; margin-bottom:1rem;
+      animation:wsType .5s .3s ease-out forwards;
+    }
+    @keyframes wsType { from{opacity:0;transform:translateY(-30px)} to{opacity:.85;transform:none} }
+    #ws-name {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(4rem,12vw,9rem); font-weight:900; line-height:1.0;
+      color:#fff; text-shadow:0 4px 60px rgba(0,0,0,.5);
+      opacity:0; animation:wsName .7s .65s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+    @keyframes wsName {
+      0%  { opacity:0; transform:scale(0.25) rotate(-4deg); }
+      55% { opacity:1; transform:scale(1.1) rotate(1.5deg); }
+      75% { transform:scale(0.97) rotate(-.5deg); }
+      100%{ opacity:1; transform:scale(1) rotate(0); }
+    }
+    #ws-badge { margin-top:1.5rem; opacity:0; animation:wsFade .5s 1.2s ease-out forwards; }
+    #ws-desc {
+      font-size:clamp(1rem,2.2vw,1.5rem); color:rgba(255,255,255,.75);
+      margin-top:.75rem; max-width:700px; line-height:1.5;
+      opacity:0; animation:wsFade .5s 1.4s ease-out forwards;
+    }
+    #ws-hint {
+      position:absolute; bottom:2.5rem; font-size:.9rem; color:rgba(255,255,255,.35);
+      opacity:0; animation:wsFade .5s 3.5s ease-out forwards;
+    }
+    @keyframes wsFade { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+
+    #slam-canvas { position:fixed; inset:0; z-index:198; pointer-events:none; display:none; }
+    .shockwave {
+      position:fixed; border-radius:50%; pointer-events:none;
+      border:4px solid rgba(255,255,255,0.6);
+      transform:translate(-50%,-50%) scale(0);
+      animation:shockwaveOut 1s ease-out forwards; z-index:199;
+    }
+    @keyframes shockwaveOut {
+      0%  { transform:translate(-50%,-50%) scale(0);   opacity:.8; }
+      100%{ transform:translate(-50%,-50%) scale(3.5); opacity:0; }
+    }
+
+    /* ── LOBBY ── */
+    #lobby-wordmark { font-family:'Playfair Display',serif; font-size:clamp(4rem,10vw,8rem); font-weight:900; color:#fff; line-height:1.05; letter-spacing:-.02em; }
+    #lobby-wordmark .accent { color:#a78bfa; }
+    #lobby-wordmark .sub { display:block; font-size:.32em; font-family:'DM Sans',sans-serif; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:#52525b; margin-top:.25em; }
+    #qr-wrap { display:flex; align-items:center; gap:3rem; flex-wrap:wrap; justify-content:center; margin-top:2.5rem; }
+    #qr-block { text-align:center; }
+    #qr-code-box { background:#fafafa; border-radius:20px; padding:16px; display:inline-block; box-shadow:0 0 60px rgba(139,92,246,.4); }
+    #qr-url { color:#52525b; margin-top:.75rem; font-size:clamp(.8rem,1.5vw,1.1rem); }
+    #lobby-code-block { text-align:center; }
+    #lobby-code-label { font-size:clamp(.7rem,1.2vw,.9rem); font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:#52525b; margin-bottom:.5rem; }
+    #lobby-code-digits { font-family:'Playfair Display',serif; font-size:clamp(4.5rem,11vw,8rem); font-weight:900; color:#fbbf24; letter-spacing:.2em; line-height:1; text-shadow:0 0 60px rgba(251,191,36,.5); }
+    #lobby-players { display:flex; flex-wrap:wrap; gap:.85rem; justify-content:center; margin-top:2.5rem; min-height:52px; }
+    .lobby-player-card {
+      display:flex; align-items:center; gap:.5rem;
+      background:rgba(139,92,246,.12); border:1px solid rgba(139,92,246,.35);
+      border-radius:12px; padding:.6rem 1.1rem;
+      font-weight:700; font-size:clamp(.9rem,1.8vw,1.2rem);
+      animation:playerIn .5s cubic-bezier(.22,.68,0,1.2);
+    }
+    @keyframes playerIn { from{opacity:0;transform:scale(.5)} to{opacity:1;transform:none} }
+
+    /* ── VOTING ── */
+    .display-question {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(1.5rem,3.5vw,2.8rem); font-weight:900; line-height:1.25;
+      color:#fff; text-shadow:0 2px 20px rgba(0,0,0,.4);
+      margin-bottom:clamp(.6rem,1.5vw,1.2rem);
+    }
+    .display-cat-badge {
+      display:inline-block; font-size:clamp(.6rem,1.2vw,.85rem); font-weight:900;
+      letter-spacing:.3em; text-transform:uppercase; color:#a78bfa;
+      padding:.3rem 1.1rem; border:1px solid rgba(139,92,246,.35);
+      background:rgba(139,92,246,.1); border-radius:99px;
+      margin-bottom:clamp(.5rem,1vw,.9rem);
+    }
+    .option-card {
+      display:flex; align-items:center; gap:clamp(1rem,2.5vw,2rem);
+      padding:clamp(1rem,2.8vw,2.2rem) clamp(1.2rem,2.8vw,2.2rem);
+      min-height:clamp(90px,12vw,160px);
+      border-radius:22px; border:2px solid;
+      animation:scrEnter .45s cubic-bezier(.34,1.56,.64,1) both;
+      transition:border-color .4s,background .4s; position:relative; overflow:hidden;
+    }
+    .option-card .heat-bg {
+      position:absolute; left:0; top:0; bottom:0; border-radius:20px;
+      transition:width .65s cubic-bezier(.22,.68,0,1.2); opacity:.2;
+    }
+    .display-opt-letter {
+      display:flex; align-items:center; justify-content:center;
+      width:clamp(66px,10vw,120px); height:clamp(66px,10vw,120px);
+      border-radius:16px; flex-shrink:0;
+      font-family:'Playfair Display',serif; font-weight:900;
+      font-size:clamp(1.8rem,5vw,3.8rem);
+    }
+    .display-opt-text { font-size:clamp(1.4rem,3.8vw,3rem); font-weight:800; line-height:1.15; flex:1; text-align:left; }
+    .display-opt-livepct { font-weight:900; font-size:clamp(1.4rem,3.5vw,2.6rem); opacity:0; transition:opacity .4s; min-width:80px; text-align:right; }
+    .option-card.has-votes .display-opt-livepct { opacity:1; }
+    .vote-count-badge { font-size:clamp(2.5rem,6vw,5rem); font-weight:900; color:#4ade80; text-shadow:0 0 40px rgba(74,222,128,.6); }
+
+    /* ── TIMER ── */
+    #timer-wrap { position:relative; display:inline-flex; align-items:center; justify-content:center; margin-top:2rem; }
+    #timer-svg { transform:rotate(-90deg); }
+    .timer-bg   { fill:none; stroke:rgba(255,255,255,.08); stroke-width:12; }
+    .timer-arc  { fill:none; stroke-width:12; stroke-linecap:round; stroke-dasharray:339.3; stroke-dashoffset:0; transition:stroke-dashoffset .9s linear,stroke .5s; }
+    #timer-num  { position:absolute; font-family:'Playfair Display',serif; font-size:2.5rem; font-weight:900; color:#fff; }
+    #timer-num.pulse { animation:timerPulse .5s ease-in-out infinite alternate; }
+    @keyframes timerPulse { from{transform:scale(1)} to{transform:scale(1.15)} }
+
+    .lock-card {
+      padding:.5rem 1rem; border-radius:10px; font-weight:700;
+      font-size:clamp(.85rem,1.8vw,1.2rem); display:flex; align-items:center; gap:.5rem;
+      border:1px solid;
+    }
+    .lock-card.locked { background:rgba(74,222,128,.1); border-color:rgba(74,222,128,.4); color:#4ade80; }
+    .lock-card.waiting { background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.1); color:#52525b; }
+    .lock-status { font-size:1rem; }
+
+    /* ── RESULTS ── */
+    .display-result-row { margin-bottom:clamp(1rem,2vw,1.8rem); }
+    .display-result-label { display:flex; justify-content:space-between; align-items:center; margin-bottom:.55rem; font-size:clamp(1.1rem,2.5vw,1.7rem); }
+    .display-result-label .opt-name { font-weight:800; display:flex; align-items:center; gap:.75rem; }
+    .display-result-label .pts-val  { font-weight:900; color:var(--amber); font-size:clamp(1rem,2.2vw,1.5rem); }
+    .display-result-label .pts-val.winner { color:#4ade80; text-shadow:0 0 24px rgba(74,222,128,.6); font-size:clamp(1.1rem,2.5vw,1.7rem); }
+    .display-bar-track { height:clamp(50px,7vw,82px); background:rgba(255,255,255,.05); border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.1); position:relative; }
+    .display-bar-fill  { height:100%; border-radius:14px; width:0%; transition:width 1.4s cubic-bezier(.22,.68,0,1.2); position:relative; }
+    .display-bar-fill.opt-0{background:linear-gradient(90deg,#8b5cf6,#c4b5fd)}
+    .display-bar-fill.opt-1{background:linear-gradient(90deg,#ec4899,#fbcfe8)}
+    .display-bar-fill.opt-2{background:linear-gradient(90deg,#22d3ee,#a5f3fc)}
+    .display-bar-fill.opt-3{background:linear-gradient(90deg,#4ade80,#bbf7d0)}
+    .display-bar-fill.opt-4{background:linear-gradient(90deg,#f97316,#fed7aa)}
+    .display-bar-fill.opt-5{background:linear-gradient(90deg,#a855f7,#e9d5ff)}
+    .display-bar-fill.opt-6{background:linear-gradient(90deg,#14b8a6,#99f6e4)}
+    .display-bar-fill.opt-7{background:linear-gradient(90deg,#eab308,#fef08a)}
+    .display-bar-fill.winner { box-shadow:0 0 40px rgba(74,222,128,.45); }
+    .winner-spotlight { position:relative; }
+    .winner-spotlight::before {
+      content:'★ TOP ANSWER'; position:absolute; top:-1.35rem; left:0;
+      font-size:.68rem; font-weight:900; letter-spacing:.22em; color:#4ade80;
+      text-shadow:0 0 12px rgba(74,222,128,.6);
+    }
+
+    /* ── LEADERBOARD ── */
+    .display-lb { max-width:860px; width:100%; margin:0 auto; }
+    .display-lb-row {
+      display:flex; align-items:center; gap:1.2rem;
+      padding:clamp(.8rem,1.8vw,1.4rem) clamp(1rem,2vw,1.8rem);
+      border-radius:16px; border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.04); margin-bottom:clamp(.4rem,.8vw,.75rem);
+      animation:scrEnter .4s both; font-size:clamp(1rem,2.2vw,1.4rem);
+      transition:all .4s;
+    }
+    .display-lb-row.top-1 { background:rgba(251,191,36,.1); border-color:rgba(251,191,36,.4); box-shadow:0 0 30px rgba(251,191,36,.1); }
+    .display-lb-row.top-2 { background:rgba(148,163,184,.07); border-color:rgba(148,163,184,.3); }
+    .display-lb-row.top-3 { background:rgba(180,110,60,.07); border-color:rgba(180,110,60,.3); }
+    .display-lb-rank { font-family:'Playfair Display',serif; font-size:clamp(1.4rem,3vw,2.2rem); font-weight:900; color:#52525b; min-width:2rem; text-align:center; }
+    .display-lb-rank.first { color:#fbbf24; text-shadow:0 0 28px rgba(251,191,36,.7); }
+    .display-lb-rank.second { color:#94a3b8; }
+    .display-lb-rank.third  { color:#b46c3c; }
+    .display-lb-name { flex:1; font-weight:800; font-size:clamp(1.1rem,2.5vw,1.8rem); }
+    .display-lb-score { font-family:'Playfair Display',serif; font-weight:900; font-size:clamp(1.3rem,2.8vw,2.1rem); color:#a78bfa; }
+    .rank-change { font-size:.75rem; font-weight:900; padding:.18rem .5rem; border-radius:6px; }
+    .rank-up   { background:rgba(74,222,128,.15); color:#4ade80; }
+    .rank-down { background:rgba(244,63,94,.15);  color:#f43f5e; }
+    .streak-flame { font-size:.9rem; }
+
+    /* ── CONTESTANT REVEAL OVERLAY ── */
+    #reveal-overlay {
+      position:fixed; inset:0; z-index:150;
+      background:rgba(9,9,11,.97);
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      transition:opacity .7s;
+      padding:2rem;
+    }
+    #reveal-overlay.hidden { display:none; }
+    #reveal-card { text-align:center; max-width:1000px; width:100%; }
+    #rc-question-small {
+      font-size:clamp(.75rem,1.5vw,1rem); color:#52525b; font-weight:700;
+      letter-spacing:.15em; text-transform:uppercase; margin-bottom:2rem; opacity:.8;
+    }
+    #rc-name {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(2.5rem,7vw,5.5rem); font-weight:900; line-height:1;
+      opacity:0;
+    }
+    #rc-predicted-label {
+      font-size:clamp(.75rem,1.5vw,1rem); font-weight:900; letter-spacing:.4em;
+      text-transform:uppercase; color:#52525b; margin:1.5rem 0 .75rem; opacity:0;
+    }
+    #rc-answer {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(2.5rem,7vw,5.5rem); font-weight:900; line-height:1.1;
+      opacity:0;
+    }
+    #rc-pct {
+      font-size:clamp(1rem,2.5vw,1.8rem); margin-top:1.5rem;
+      font-weight:700; opacity:0; color:#a78bfa;
+    }
+    #rc-points {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(2rem,5vw,4rem); font-weight:900; margin-top:.5rem; opacity:0;
+    }
+    #rc-indicator {
+      font-size:clamp(.8rem,1.8vw,1.2rem); font-weight:900; letter-spacing:.25em;
+      text-transform:uppercase; margin-top:.75rem; opacity:0;
+    }
+    #reveal-progress {
+      position:absolute; bottom:2.5rem;
+      display:flex; gap:.75rem; align-items:center;
+    }
+    .reveal-dot {
+      width:10px; height:10px; border-radius:50%;
+      background:rgba(255,255,255,.2); transition:all .3s;
+    }
+    .reveal-dot.active { background:#8b5cf6; box-shadow:0 0 12px #8b5cf6; width:14px; height:14px; }
+    .reveal-dot.done   { background:rgba(255,255,255,.45); }
+
+    /* ── RESULTS FLASH ── */
+    #results-flash-overlay {
+      position:fixed; inset:0; z-index:100;
+      display:flex; align-items:center; justify-content:center;
+      pointer-events:none; opacity:0;
+    }
+    #results-flash-overlay.show { animation:flashBurst .9s cubic-bezier(.22,.68,0,1.2) forwards; }
+    @keyframes flashBurst {
+      0%  { opacity:0; } 20%{ opacity:1; } 70%{ opacity:1; } 100%{ opacity:0; }
+    }
+    .results-flash-text {
+      font-family:'Playfair Display',serif; font-weight:900;
+      font-size:clamp(4rem,12vw,9rem); color:#fff;
+      text-shadow:0 0 80px rgba(255,255,255,.6); letter-spacing:.05em;
+    }
+
+    /* ── DELTA FLOATER ── */
+    .score-delta {
+      position:fixed; z-index:999; font-family:'Playfair Display',serif;
+      font-size:2.2rem; font-weight:900; pointer-events:none;
+      animation:deltaFloat 2.2s ease-out forwards;
+    }
+    @keyframes deltaFloat {
+      0%  { transform:translateY(0) scale(1); opacity:1; }
+      40% { transform:translateY(-50px) scale(1.15); opacity:1; }
+      100%{ transform:translateY(-130px) scale(.8); opacity:0; }
+    }
+
+    /* ── JOIN TOAST ── */
+    .join-toast {
+      position:fixed; bottom:4rem; left:50%; transform:translateX(-50%);
+      background:rgba(139,92,246,.18); border:1px solid rgba(139,92,246,.4);
+      border-radius:12px; padding:.75rem 1.5rem;
+      font-weight:700; font-size:1.1rem; z-index:300;
+      animation:toastIn .4s cubic-bezier(.34,1.56,.64,1);
+    }
+    .join-toast.out { animation:toastOut .4s ease-in forwards; }
+    @keyframes toastIn  { from{opacity:0;transform:translateX(-50%) translateY(20px)} to{opacity:1;transform:translateX(-50%)} }
+    @keyframes toastOut { from{opacity:1} to{opacity:0;transform:translateX(-50%) translateY(10px)} }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+    @keyframes popIn { from{transform:scale(.3)} to{transform:scale(1)} }
+
+    /* ── ANIMATIONS ── */
+    @keyframes revealIn {
+      from { opacity:0; transform:translateY(50px) scale(0.85); }
+      to   { opacity:1; transform:none; }
+    }
+    @keyframes punchIn {
+      0%  { opacity:0; transform:scale(0.3) rotate(-6deg); }
+      60% { opacity:1; transform:scale(1.1) rotate(1.5deg); }
+      80% { transform:scale(0.96); }
+      100%{ opacity:1; transform:none; }
+    }
+
+    canvas#confetti-canvas { position:fixed; inset:0; z-index:90; pointer-events:none; display:none; }
+  </style>
+</head>
+<body>
+
+  <div id="round-corner" class="hidden"><div class="badge badge-lobby" id="round-badge">Round 1</div></div>
+  <div id="modifier-corner" class="hidden"></div>
+  <div id="audience-corner" class="hidden">
+    <div class="audience-count-badge"><span class="dot"></span><span id="audience-num">0</span> watching</div>
+  </div>
+
+  <canvas id="confetti-canvas"></canvas>
+
+  <div id="results-flash-overlay">
+    <div class="results-flash-text">RESULTS!</div>
+  </div>
+
+  <canvas id="slam-canvas"></canvas>
+  <div id="wheel-slam" onclick="dismissSlam()">
+    <div id="ws-particles"></div>
+    <div id="ws-type"></div>
+    <div id="ws-name"></div>
+    <div id="ws-badge"></div>
+    <div id="ws-desc"></div>
+    <div id="ws-hint">tap anywhere to continue</div>
+  </div>
+
+  <!-- ── CONTESTANT REVEAL OVERLAY ── -->
+  <div id="reveal-overlay" class="hidden">
+    <div id="reveal-card">
+      <div id="rc-question-small"></div>
+      <div id="rc-name"></div>
+      <div id="rc-predicted-label">PREDICTED</div>
+      <div id="rc-answer"></div>
+      <div id="rc-pct"></div>
+      <div id="rc-points"></div>
+      <div id="rc-indicator"></div>
+    </div>
+    <div id="reveal-progress"></div>
+  </div>
+
+  <!-- ── LOBBY ── -->
+  <div id="lobby" class="screen">
+    <div id="lobby-wordmark">
+      The<span class="accent">.</span><br>Game Show
+      <span class="sub">Pick what the crowd picks</span>
+    </div>
+    <div id="qr-wrap">
+      <div id="qr-block">
+        <div id="qr-code-box"><canvas id="qr-canvas"></canvas></div>
+        <div id="qr-url"></div>
+      </div>
+      <div id="lobby-code-block" class="hidden">
+        <div id="lobby-code-label">Game Code</div>
+        <div id="lobby-code-digits"></div>
+        <div style="font-size:clamp(.7rem,1.2vw,.9rem);color:#52525b;margin-top:.5rem">enter at <strong style="color:#fafafa">/vote</strong></div>
+      </div>
+    </div>
+    <div id="lobby-players"></div>
+  </div>
+
+  <!-- ── SPINNING ── -->
+  <div id="spinning" class="screen hidden">
+    <p style="font-size:clamp(1rem,2vw,1.4rem);font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#52525b;margin-bottom:2rem;animation:pulse 1.8s ease-in-out infinite">Spinning…</p>
+    <div style="display:flex;justify-content:center">
+      <canvas id="display-wheel" style="max-width:90vmin;max-height:90vmin;display:block"></canvas>
+    </div>
+  </div>
+
+  <!-- ── WHEEL RESULT ── -->
+  <div id="wheel-result" class="screen hidden">
+    <div id="wr-name-display" style="font-family:'Playfair Display',serif;font-size:clamp(1.4rem,4vw,2.8rem);font-weight:900;line-height:1.1;margin-bottom:1rem;opacity:.85"></div>
+    <div id="wr-desc-display" style="font-size:clamp(.9rem,2vw,1.2rem);color:rgba(255,255,255,.45);max-width:500px;line-height:1.6;animation:pulse 1.8s ease-in-out infinite"></div>
+  </div>
+
+  <!-- ── VOTING ── -->
+  <div id="voting" class="screen hidden" style="justify-content:flex-start;padding-top:clamp(1.5rem,3vh,3.5rem)">
+    <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:clamp(.75rem,1.5vh,1.5rem)">
+      <span style="width:10px;height:10px;border-radius:50%;background:#4ade80;display:inline-block;animation:pulse 1.2s ease-in-out infinite;box-shadow:0 0 12px #4ade80;flex-shrink:0"></span>
+      <span style="font-size:clamp(.65rem,1.2vw,.85rem);font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#52525b">Live Voting</span>
+      <span style="color:#3f3f46;font-size:.7rem">·</span>
+      <span class="vote-count-badge" id="v-count" style="font-size:clamp(1rem,2vw,1.5rem);color:#4ade80;text-shadow:0 0 20px rgba(74,222,128,.5);font-weight:900">0</span>
+      <span style="color:#52525b;font-size:clamp(.65rem,1.2vw,.85rem);font-weight:700">votes</span>
+    </div>
+    <div id="v-category" class="display-cat-badge"></div>
+    <div class="display-question" id="v-q-text"></div>
+    <div id="v-options" style="display:flex;flex-direction:column;gap:clamp(.6rem,1.2vw,1.1rem);width:min(1280px,96vw);margin:0 auto"></div>
+    <div style="display:flex;align-items:center;gap:1.5rem;margin-top:clamp(.6rem,1.5vh,1.5rem)">
+      <div id="timer-wrap" class="hidden">
+        <svg id="timer-svg" width="110" height="110" viewBox="0 0 130 130">
+          <circle class="timer-bg" cx="65" cy="65" r="54"/>
+          <circle class="timer-arc" id="timer-arc" cx="65" cy="65" r="54"/>
+        </svg>
+        <div id="timer-num">60</div>
+      </div>
+      <div id="locked-in-grid" style="display:flex;flex-wrap:wrap;gap:.65rem;justify-content:center"></div>
+    </div>
+  </div>
+
+  <!-- ── CLOSED ── -->
+  <div id="closed" class="screen hidden" style="justify-content:flex-start;padding-top:clamp(1.5rem,3vh,3.5rem)">
+    <div style="font-size:clamp(.65rem,1.2vw,.85rem);font-weight:800;letter-spacing:.25em;text-transform:uppercase;color:#f43f5e;margin-bottom:clamp(.75rem,1.5vh,1.5rem);display:flex;align-items:center;gap:.5rem">
+      <span style="width:8px;height:8px;border-radius:50%;background:#f43f5e;display:inline-block"></span>
+      Voting Closed
+    </div>
+    <div id="c-category" class="display-cat-badge"></div>
+    <div class="display-question" id="c-q-text"></div>
+    <div id="c-options" style="display:flex;flex-direction:column;gap:clamp(.6rem,1.2vw,1.1rem);width:min(1280px,96vw);margin:clamp(.75rem,1.5vh,1.5rem) auto 0"></div>
+    <p style="color:#52525b;margin-top:clamp(1rem,2vh,2rem);font-size:clamp(1rem,2vw,1.5rem);font-weight:700;letter-spacing:.08em;animation:pulse 1.8s ease-in-out infinite">Results incoming…</p>
+  </div>
+
+  <!-- ── REVEALED ── -->
+  <div id="revealed" class="screen hidden" style="justify-content:flex-start;padding-top:clamp(1rem,2.5vh,3rem)">
+    <div id="r-cat" class="display-cat-badge" style="margin-bottom:.5rem"></div>
+    <div class="display-question" id="r-q-text" style="font-size:clamp(1.1rem,2.5vw,1.9rem);margin-bottom:clamp(.5rem,1.5vh,1.2rem)"></div>
+    <div id="r-options" style="text-align:left;width:min(1100px,96vw);margin:0 auto"></div>
+    <div id="r-mod-note" style="color:#52525b;margin-top:.6rem;font-size:clamp(.85rem,1.6vw,1.1rem)"></div>
+    <div id="r-lb" class="hidden" style="width:min(860px,96vw);margin:clamp(1rem,2.5vh,2.5rem) auto 0">
+      <div style="font-size:clamp(.65rem,1.2vw,.85rem);font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#52525b;margin-bottom:clamp(.6rem,1.2vh,1rem);text-align:center">Leaderboard</div>
+      <div class="display-lb" id="r-lb-list"></div>
+    </div>
+  </div>
+
+  <script src="wheel-segments.js"></script>
+  <script src="wheel.js"></script>
+  <script src="sounds.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io({ query: { role: 'display' } });
+    let displayWheel, prevPhase = null;
+
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    let timerInterval = null, timerRunning = false;
+    let prevRanks = {}, prevScores = {};
+    let revealActive = false, revealTimer = null;
+    let pendingSpinIdx = null;
+    let wheelSegFP = '';
+    let slamPending = false; // true during the 400ms window before slam fires
+
+    const SCREENS = ['lobby','spinning','wheel-result','voting','closed','revealed'];
+    let currentScreen = null;
+
+    const OPT_COLORS  = ['#8b5cf6','#ec4899','#22d3ee','#4ade80','#f97316','#a855f7','#14b8a6','#eab308'];
+    const OPT_LETTERS = ['A','B','C','D','E','F','G','H'];
+
+    // ── SCREEN TRANSITIONS ────────────────────────────────────────────────
+    function show(id) {
+      if (currentScreen === id) return;
+      if (currentScreen) {
+        const el = document.getElementById(currentScreen);
+        el.classList.add('screen-exit');
+        setTimeout(() => { el.classList.add('hidden'); el.classList.remove('screen-exit'); }, 280);
+      }
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        el.style.display = ''; // clear any inline override (e.g. slam sets wheel-result to display:none)
+        el.classList.remove('hidden');
+        el.classList.add('screen-enter');
+        setTimeout(() => el.classList.remove('screen-enter'), 500);
+        currentScreen = id;
+      }, currentScreen ? 260 : 0);
+    }
+
+    window.addEventListener('load', () => {
+      const canvas = document.getElementById('display-wheel');
+      const ws = Math.min(820, Math.min(window.innerWidth, window.innerHeight) * 0.88);
+      canvas.style.width = ws + 'px'; canvas.style.height = ws + 'px';
+      displayWheel = makeWheel(canvas);
+      displayWheel.init();
+      if (pendingSpinIdx !== null && window.WHEEL?.length) {
+        displayWheel.spin(pendingSpinIdx, 4200, null, () => {});
+        pendingSpinIdx = null;
+      }
+
+      const voteUrl = `${location.protocol}//${location.hostname}${location.port ? ':'+location.port : ''}/vote`;
+      const qrSize  = Math.min(280, Math.round(window.innerWidth * 0.2));
+      QRCode.toCanvas(document.getElementById('qr-canvas'), voteUrl, { width:qrSize, margin:1, color:{dark:'#09090b',light:'#fafafa'} });
+      document.getElementById('qr-url').textContent = voteUrl;
+    });
+
+    let state = {};
+    // Track live vote totals from vote-tick so closed screen can show them
+    let liveVotes = {}, liveTotalVotes = 0;
+
+    // ── SOCKET EVENTS ─────────────────────────────────────────────────────
+    socket.on('vote-tick', ({ votes, total }) => {
+      // Cache latest vote state
+      if (votes) { liveVotes = votes; liveTotalVotes = total; }
+
+      const el = document.getElementById('v-count');
+      if (el) { el.textContent = total; el.style.transform = 'scale(1.35)'; setTimeout(() => el.style.transform = '', 200); }
+
+      // Update audience watching count corner
+      const audNum = document.getElementById('audience-num');
+      if (audNum) audNum.textContent = total;
+      const audCorner = document.getElementById('audience-corner');
+      if (audCorner) audCorner.classList.toggle('hidden', total === 0);
+      if (votes && total > 0 && state.question) {
+        // Update voting screen cards
+        applyLiveVotesToContainer('v-options', state.question.options, votes, total);
+        // Also update closed screen cards if currently closed
+        if (state.phase === 'closed') {
+          applyLiveVotesToContainer('c-options', state.question.options, votes, total);
+        }
+      }
+    });
+
+    // Helper: update option card live % and heat bars for a given container
+    function applyLiveVotesToContainer(containerId, options, votes, total) {
+      if (!options || !votes) return;
+      const cards = document.getElementById(containerId)?.querySelectorAll('.option-card');
+      if (!cards) return;
+      options.forEach((opt, i) => {
+        const card = cards[i]; if (!card) return;
+        const pct = total > 0 ? Math.round((votes[opt] || 0) / total * 100) : 0;
+        const pctEl = card.querySelector('.display-opt-livepct');
+        const heatEl = card.querySelector('.heat-bg');
+        if (pctEl) pctEl.textContent = pct + '%';
+        if (heatEl) heatEl.style.width = pct + '%';
+        card.classList.toggle('has-votes', (votes[opt] || 0) > 0);
+      });
+    }
+
+    socket.on('locked-in', lockedNames => { renderLockedIn(lockedNames, state.contestants); });
+    socket.on('contestant-joined', name => showJoinToast(name));
+    socket.on('score-deltas', deltas => {
+      setTimeout(() => {
+        Object.entries(deltas).forEach(([name, pts], i) => {
+          if (pts !== 0) setTimeout(() => spawnDelta(name, pts), i * 250);
+        });
+      }, 800);
+    });
+
+    socket.on('state', s => {
+      state = s;
+      // Reset live vote cache when a new round starts (voting phase entered fresh)
+      if (s.phase === 'voting' && prevPhase !== 'voting') {
+        liveVotes = {}; liveTotalVotes = 0;
+        if (s.question) s.question.options.forEach(o => { liveVotes[o] = 0; });
+      }
+      if (s.wheelSegments?.length) {
+        const fp = s.wheelSegments.length + ':' + (s.wheelSegments[0]?.id || '');
+        if (fp !== wheelSegFP) {
+          wheelSegFP = fp;
+          window.WHEEL = s.wheelSegments;
+          if (displayWheel && !displayWheel.isAnimating()) displayWheel.redraw();
+        }
+      }
+      render(s);
+    });
+
+    // ── MAIN RENDER ───────────────────────────────────────────────────────
+    function render(s) {
+      const { phase, question, voterCount, wheelSegmentIndex, wheelSegment,
+              contestants, results, predictions, code, qrHidden, wordmarkHidden,
+              timerDuration, timerStart, modifier, scoreMultiplier } = s;
+
+      // Clean up reveal sequence when leaving revealed phase
+      if (prevPhase === 'revealed' && phase !== 'revealed') {
+        clearTimeout(revealTimer);
+        revealActive = false;
+        const ov = document.getElementById('reveal-overlay');
+        if (ov) { ov.classList.add('hidden'); ov.style.opacity = '1'; ov.style.background = ''; }
+      }
+
+      // Round badge
+      const rc = document.getElementById('round-corner');
+      if (s.round > 0) {
+        rc.classList.remove('hidden');
+        document.getElementById('round-badge').textContent = `Round ${s.round}`;
+      } else rc.classList.add('hidden');
+
+      renderModifierCorner(modifier, scoreMultiplier);
+
+      // QR visibility — hides both QR and join code when toggled off
+      document.getElementById('qr-block').style.display = qrHidden ? 'none' : '';
+      const lobbyCode = document.getElementById('lobby-code-block');
+      if (code && !qrHidden) { lobbyCode.classList.remove('hidden'); document.getElementById('lobby-code-digits').textContent = code; }
+      else lobbyCode.classList.add('hidden');
+
+      // Wordmark visibility
+      const wmEl = document.getElementById('lobby-wordmark');
+      if (wmEl) wmEl.style.display = wordmarkHidden ? 'none' : '';
+
+      renderLobbyPlayers(contestants);
+
+      if (phase === 'voting' && timerDuration > 0 && timerStart) {
+        startTimer(timerDuration, timerStart);
+      } else stopTimer();
+
+      if (phase === 'lobby') { show('lobby'); }
+
+      else if (phase === 'spinning') {
+        show('spinning');
+        if (prevPhase !== 'spinning' && wheelSegmentIndex != null) {
+          if (displayWheel) {
+            displayWheel.spin(wheelSegmentIndex, 4200, null, () => {});
+          } else {
+            pendingSpinIdx = wheelSegmentIndex;
+          }
+        }
+      }
+
+      else if (phase === 'wheel-result') {
+        // Populate wheel-result screen content
+        if (wheelSegment) {
+          const seg = wheelSegment;
+          const isMod = seg.type === 'modifier';
+          const modInfo = isMod ? window.MODIFIER_INFO?.[seg.id] : null;
+          const color = seg.color || '#8b5cf6';
+          const nameEl = document.getElementById('wr-name-display');
+          const descEl = document.getElementById('wr-desc-display');
+          nameEl.textContent = seg.label || seg.id;
+          nameEl.style.color = color;
+          nameEl.style.textShadow = '';
+          descEl.textContent = isMod
+            ? (modInfo?.desc || 'Modifier active this round.')
+            : 'Host is choosing a question…';
+          document.getElementById('wheel-result').style.background = '';
+        }
+        if (prevPhase === 'spinning') {
+          slamPending = true;
+          document.getElementById('wheel-result').style.display = 'none';
+          setTimeout(() => {
+            slamPending = false;
+            // Re-check phase in case host advanced while we were waiting
+            if (state?.phase === 'wheel-result') {
+              show('wheel-result');
+              triggerSlam(wheelSegmentIndex, wheelSegment);
+            } else {
+              // Clear the display:none we placed on wheel-result so it's not stuck
+              const wr = document.getElementById('wheel-result');
+              if (wr) wr.style.display = '';
+            }
+          }, 400);
+        } else if (!slamPending) show('wheel-result');
+      }
+
+      else if (phase === 'voting') {
+        show('voting');
+        const catLabel = window.CATEGORY_LABELS?.[question?.category] || question?.category || '';
+        document.getElementById('v-category').textContent = catLabel;
+        document.getElementById('v-category').style.display = catLabel ? '' : 'none';
+        document.getElementById('v-q-text').textContent = question?.text || '';
+        document.getElementById('v-count').textContent  = voterCount || 0;
+        if (prevPhase !== 'voting') {
+          renderLockedIn([], contestants);
+          renderOptionCards('v-options', question?.options);
+        }
+      }
+
+      else if (phase === 'closed') {
+        show('closed');
+        const catLabelC = window.CATEGORY_LABELS?.[question?.category] || question?.category || '';
+        const cCat = document.getElementById('c-category');
+        if (cCat) { cCat.textContent = catLabelC; cCat.style.display = catLabelC ? '' : 'none'; }
+        document.getElementById('c-q-text').textContent = question?.text || '';
+        if (prevPhase !== 'closed') {
+          // Capture pre-reveal ranks and scores — at this moment scores haven't changed yet
+          if (contestants) {
+            const sorted = Object.values(contestants).sort((a,b) => b.score-a.score);
+            sorted.forEach((c, i) => { prevRanks[c.name] = i + 1; prevScores[c.name] = c.score; });
+          }
+          // First time entering closed — render cards and apply any live votes already in cache
+          renderOptionCards('c-options', question?.options);
+          applyLiveVotesToContainer('c-options', question?.options, liveVotes, liveTotalVotes);
+        }
+      }
+
+      else if (phase === 'revealed') {
+        show('revealed');
+        const catLabelR = window.CATEGORY_LABELS?.[question?.category] || question?.category || '';
+        const rCat = document.getElementById('r-cat');
+        if (rCat) { rCat.textContent = catLabelR; rCat.style.display = catLabelR ? '' : 'none'; }
+        document.getElementById('r-q-text').textContent = question?.text || '';
+
+        if (prevPhase !== 'revealed') {
+          // Fresh transition into revealed — run the full sequence
+          revealActive = false; clearTimeout(revealTimer);
+          document.getElementById('r-options').innerHTML = '';
+          document.getElementById('r-lb').classList.add('hidden');
+
+          flashResults(() => {
+            setTimeout(() => {
+              const names = Object.keys(contestants || {});
+              if (names.length > 0 && predictions && results) {
+                runRevealSequence(names, predictions, results, question, contestants, modifier, scoreMultiplier);
+              } else {
+                showResultsDirect(results, question, contestants, modifier, scoreMultiplier);
+              }
+            }, 500);
+          });
+        }
+      }
+
+      prevPhase = phase;
+    }
+
+    // ── INDIVIDUAL CONTESTANT REVEAL SEQUENCE ─────────────────────────────
+    function runRevealSequence(names, predictions, results, question, contestants, modifier, scoreMultiplier) {
+      revealActive = true;
+      const overlay = document.getElementById('reveal-overlay');
+      overlay.classList.remove('hidden');
+      overlay.style.opacity = '1';
+
+      const maxPct      = Object.values(results || {}).reduce((mx, r) => Math.max(mx, r.pct || 0), 0);
+      const winnerOption = maxPct > 0 ? (question?.options?.find(o => results?.[o]?.pct === maxPct) || null) : null;
+
+      // Build progress dots
+      const progressEl = document.getElementById('reveal-progress');
+      progressEl.innerHTML = names.map((_, i) => `<div class="reveal-dot" id="rdot-${i}"></div>`).join('');
+
+      function reveal(i) {
+        if (i >= names.length) {
+          // All contestants revealed — show results
+          overlay.style.opacity = '0';
+          revealTimer = setTimeout(() => {
+            overlay.classList.add('hidden');
+            overlay.style.opacity = '1';
+            revealActive = false;
+            showResultsDirect(results, question, contestants, modifier, scoreMultiplier);
+          }, 700);
+          return;
+        }
+
+        // Update progress dots
+        names.forEach((_, j) => {
+          const dot = document.getElementById(`rdot-${j}`);
+          if (!dot) return;
+          dot.className = 'reveal-dot' + (j < i ? ' done' : j === i ? ' active' : '');
+        });
+
+        const name = names[i];
+        const pick = predictions?.[name];
+        const res  = pick ? results?.[pick] : null;
+        const pct  = res?.pct ?? 0;
+        const isWinner = pick && pick === winnerOption;
+        // Use actual score delta (includes streak bonus, riskIt, modifiers) when available
+        const pts = prevScores[name] !== undefined
+          ? Math.max(0, (contestants[name]?.score || 0) - prevScores[name])
+          : Math.round(pct * (scoreMultiplier || 1));
+        const optIdx = question?.options?.indexOf(pick) ?? -1;
+        const color  = optIdx >= 0 ? OPT_COLORS[optIdx] : '#8b5cf6';
+
+        // Set overlay background glow
+        overlay.style.background = `radial-gradient(ellipse at center, ${color}18 0%, rgba(9,9,11,.97) 60%)`;
+
+        // Populate fields
+        document.getElementById('rc-question-small').textContent = question?.text || '';
+        const rcName = document.getElementById('rc-name');
+        rcName.textContent = name;
+        rcName.style.color = color;
+        rcName.style.textShadow = `0 0 60px ${color}55`;
+
+        const rcAnswer = document.getElementById('rc-answer');
+        rcAnswer.textContent = pick || 'No prediction';
+        rcAnswer.style.color  = pick ? color : '#52525b';
+        rcAnswer.style.textShadow = pick ? `0 0 80px ${color}55` : '';
+
+        const rcPct = document.getElementById('rc-pct');
+        const rcPts = document.getElementById('rc-points');
+        const rcInd = document.getElementById('rc-indicator');
+
+        rcPct.textContent = '';
+        rcPts.textContent = '';
+        rcInd.textContent = '';
+
+        // Reset all to invisible
+        const els = ['rc-name','rc-predicted-label','rc-answer','rc-pct','rc-points','rc-indicator'];
+        els.forEach(id => {
+          const el = document.getElementById(id);
+          el.style.animation = 'none'; el.style.opacity = '0';
+          el.offsetHeight; // reflow
+          el.style.animation = '';
+        });
+
+        // Animate in sequence
+        function fadeIn(id, delay, style) {
+          const el = document.getElementById(id);
+          setTimeout(() => {
+            el.style.animation = `${style || 'revealIn'} .65s cubic-bezier(.22,.68,0,1.2) forwards`;
+          }, delay);
+        }
+
+        fadeIn('rc-name', 80, 'punchIn');
+        fadeIn('rc-predicted-label', 600);
+        fadeIn('rc-answer', 1000, 'punchIn');
+
+        setTimeout(() => {
+          if (pick) {
+            rcPct.textContent = `${pct}% of the crowd`;
+            rcPct.style.color = pct >= 50 ? '#4ade80' : pct >= 25 ? '#fbbf24' : '#f87171';
+          } else {
+            rcPct.textContent = 'Did not predict';
+            rcPct.style.color = '#52525b';
+          }
+          fadeIn('rc-pct', 0);
+        }, 2100);
+
+        setTimeout(() => {
+          const earnedStr = pick ? `+${pts} points` : '+0 points';
+          rcPts.textContent = earnedStr;
+          rcPts.style.color = pts > 0 ? '#4ade80' : '#52525b';
+          fadeIn('rc-points', 0);
+
+          if (isWinner) {
+            rcInd.textContent = 'CORRECT PREDICTION!';
+            rcInd.style.color = '#4ade80';
+          } else if (pick) {
+            rcInd.textContent = 'Not the top answer';
+            rcInd.style.color = '#f87171';
+          }
+          if (rcInd.textContent) fadeIn('rc-indicator', 200);
+        }, 3000);
+
+        // Move to next contestant
+        revealTimer = setTimeout(() => reveal(i + 1), 4800);
+      }
+
+      reveal(0);
+    }
+
+    function showResultsDirect(results, question, contestants, modifier, scoreMultiplier) {
+      renderResults(results, question, modifier, scoreMultiplier);
+      setTimeout(() => renderRevealedLB(contestants, prevRanks), 1800);
+      const winColor = getWinnerColor(results, question);
+      setTimeout(() => launchConfetti(winColor || '#8b5cf6'), 600);
+    }
+
+    function getWinnerColor(results, question) {
+      if (!results || !question) return '#8b5cf6';
+      const maxPct = Math.max(...Object.values(results).map(r => r.pct || 0), 0);
+      const idx = question.options?.findIndex(o => results[o]?.pct === maxPct) ?? 0;
+      return OPT_COLORS[idx % OPT_COLORS.length];
+    }
+
+    // ── MODIFIER CORNER ───────────────────────────────────────────────────
+    function renderModifierCorner(modifier, mult) {
+      const el = document.getElementById('modifier-corner');
+      if (!modifier) { el.classList.add('hidden'); return; }
+      const info = window.MODIFIER_INFO?.[modifier];
+      if (!info) { el.classList.add('hidden'); return; }
+      el.classList.remove('hidden');
+      el.style.background = info.color + '22';
+      el.style.borderColor = info.color + '55';
+      el.style.color = '#fff';
+      el.innerHTML = `<span style="color:${info.color};font-size:1.1rem">${info.badge}</span> ${info.label}`;
+    }
+
+    // ── FLASH ─────────────────────────────────────────────────────────────
+    function flashResults(onDone) {
+      const el = document.getElementById('results-flash-overlay');
+      el.classList.remove('show'); el.offsetHeight; el.classList.add('show');
+      if (onDone) setTimeout(onDone, 420);
+      setTimeout(() => el.classList.remove('show'), 1000);
+    }
+
+    // ── LOBBY PLAYERS ─────────────────────────────────────────────────────
+    let knownPlayers = new Set();
+    function renderLobbyPlayers(contestants) {
+      if (!contestants) return;
+      const container = document.getElementById('lobby-players');
+      const names = Object.keys(contestants);
+      names.forEach(name => {
+        if (!knownPlayers.has(name)) {
+          knownPlayers.add(name);
+          const card = document.createElement('div');
+          card.className = 'lobby-player-card';
+          card.dataset.name = name;
+          card.innerHTML = `<span style="font-family:'DM Sans',sans-serif;font-size:.85em;opacity:.55">?</span> ${esc(name)}`;
+          container.appendChild(card);
+        }
+      });
+      [...container.children].forEach(card => {
+        const name = card.dataset.name || card.textContent.replace('?','').trim();
+        if (!contestants[name]) { card.remove(); knownPlayers.delete(name); }
+      });
+    }
+
+    function showJoinToast(name) {
+      const el = document.createElement('div');
+      el.className = 'join-toast';
+      el.innerHTML = `<span style="opacity:.6">?</span> ${esc(name)} joined`;
+      document.body.appendChild(el);
+      setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, 2800);
+    }
+
+    // ── SLAM / WHEEL RESULT ───────────────────────────────────────────────
+    let slamTimeout;
+    function triggerSlam(segIdx, seg) {
+      if (!seg) return;
+      const segData = window.WHEEL?.[segIdx] || seg;
+      const color   = segData.color || '#8b5cf6';
+      const name    = segData.label || seg.id;
+      const isMod   = segData.type === 'modifier';
+      const modInfo = isMod ? window.MODIFIER_INFO?.[segData.id] : null;
+
+      const overlay = document.getElementById('wheel-slam');
+      overlay.style.background = `#000`;
+      overlay.style.backgroundImage = `radial-gradient(ellipse at center, ${color}28 0%, transparent 65%)`;
+      document.getElementById('ws-type').textContent  = isMod ? '⚡ MODIFIER ⚡' : 'Category';
+      document.getElementById('ws-type').style.color  = isMod ? color : 'rgba(255,255,255,.7)';
+      document.getElementById('ws-name').textContent  = name;
+      document.getElementById('ws-name').style.color  = color;
+      document.getElementById('ws-desc').textContent  = isMod ? (modInfo?.desc || '') : 'Host picks a question from this category.';
+      document.getElementById('ws-badge').innerHTML   = isMod && modInfo?.badge ? `<div style="font-size:4rem;line-height:1">${modInfo.badge}</div>` : '';
+
+      // Keep wheel-result invisible during slam — display:none beats CSS animations
+      // (opacity/animation inline styles can be overridden by keyframe fill-mode)
+      const wrScreen = document.getElementById('wheel-result');
+      if (wrScreen) wrScreen.style.display = 'none';
+
+      animateSlamLanding(segIdx, segData, color, () => {
+        spawnParticles(color);
+        spawnShockwaves(color);
+        ['ws-type','ws-name','ws-badge','ws-desc','ws-hint'].forEach(id => {
+          const el = document.getElementById(id);
+          el.style.animation = 'none'; el.offsetHeight; el.style.animation = '';
+        });
+        overlay.classList.add('active');
+        clearTimeout(slamTimeout);
+        slamTimeout = setTimeout(dismissSlam, 7000);
+      });
+    }
+
+    function dismissSlam() {
+      clearTimeout(slamTimeout);
+      const overlay = document.getElementById('wheel-slam');
+      overlay.style.transition = 'opacity .6s';
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.classList.remove('active');
+        overlay.style.opacity = ''; overlay.style.transition = '';
+        document.getElementById('ws-particles').innerHTML = '';
+        // Reveal wheel-result only after slam is fully gone — avoids the duplicate
+        const wr = document.getElementById('wheel-result');
+        if (wr) { wr.classList.remove('screen-enter'); wr.style.display = ''; }
+      }, 620);
+    }
+
+    function animateSlamLanding(segIdx, segData, color, onComplete) {
+      const canvas = document.getElementById('slam-canvas');
+      canvas.style.display = 'block'; canvas.style.opacity = '1'; canvas.style.transition = '';
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+
+      const wheelCanvas = document.getElementById('display-wheel');
+      const rect  = wheelCanvas.getBoundingClientRect();
+      const wcx   = rect.left + rect.width  / 2;
+      const wcy   = rect.top  + rect.height / 2;
+      const wheelR = (rect.width / 2) * 0.84;
+
+      const n   = Math.max(1, (window.WHEEL || []).length);
+      const sa  = (2 * Math.PI) / n;
+      const rot = displayWheel?.getRotation?.() || 0;
+      const midAngle = rot - Math.PI / 2 + segIdx * sa + sa / 2;
+
+      const SCX = window.innerWidth / 2, SCY = window.innerHeight / 2;
+      const maxR = Math.sqrt(SCX*SCX + SCY*SCY) * 1.08;
+      const PULL_END = 420, FAN_END = 800, FILL_END = 1150;
+
+      function easeOut3(t) { return 1 - Math.pow(1 - Math.min(t,1), 3); }
+      function easeOut5(t) { return 1 - Math.pow(1 - Math.min(t,1), 5); }
+      function lerp(a,b,t) { return a + (b-a) * Math.min(Math.max(t,0),1); }
+
+      let calledBack = false;
+      const startTime = performance.now();
+
+      // rAF is throttled/paused in background tabs — guarantee completion via setTimeout
+      const fallbackTimer = setTimeout(() => {
+        if (!calledBack) { calledBack = true; onComplete(); }
+        canvas.style.display = 'none';
+      }, FILL_END + 200);
+
+      function frame(now) {
+        const elapsed = now - startTime;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let cx, cy, r, sliceAngle, sliceMid;
+        if (elapsed < PULL_END) {
+          const t = elapsed / PULL_END, ease = easeOut3(t);
+          cx = lerp(wcx, SCX, ease); cy = lerp(wcy, SCY, ease);
+          r  = lerp(wheelR*.55, wheelR*1.05, ease);
+          sliceAngle = sa * lerp(1, 2.2, easeOut3(t)); sliceMid = midAngle;
+        } else if (elapsed < FAN_END) {
+          const t = (elapsed - PULL_END) / (FAN_END - PULL_END), ease = easeOut5(t);
+          cx = SCX; cy = SCY;
+          r  = lerp(wheelR*1.05, wheelR*1.7, ease);
+          sliceAngle = lerp(sa*2.2, Math.PI*2, easeOut5(t));
+          sliceMid = midAngle + ease * Math.PI * .6;
+        } else {
+          const t = (elapsed - FAN_END) / (FILL_END - FAN_END), ease = easeOut5(t);
+          cx = SCX; cy = SCY;
+          r  = lerp(wheelR*1.7, maxR, ease); sliceAngle = Math.PI*2; sliceMid = 0;
+          if (!calledBack && t >= .82) { calledBack = true; onComplete(); }
+        }
+        ctx.save();
+        ctx.beginPath();
+        if (sliceAngle >= Math.PI*2 - .01) { ctx.arc(cx, cy, r, 0, Math.PI*2); }
+        else { ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, sliceMid-sliceAngle/2, sliceMid+sliceAngle/2); ctx.closePath(); }
+        ctx.fillStyle = color;
+        if (r < wheelR*2) { ctx.shadowColor = color; ctx.shadowBlur = 60; }
+        ctx.fill(); ctx.restore();
+        if (elapsed < FILL_END) { requestAnimationFrame(frame); }
+        else {
+          clearTimeout(fallbackTimer);
+          ctx.beginPath(); ctx.arc(SCX, SCY, maxR, 0, Math.PI*2);
+          ctx.fillStyle = color; ctx.fill();
+          if (!calledBack) { calledBack = true; onComplete(); }
+          setTimeout(() => {
+            canvas.style.transition = 'opacity .5s ease-out'; canvas.style.opacity = '0';
+            setTimeout(() => { canvas.style.display = 'none'; canvas.style.opacity = '1'; canvas.style.transition = ''; }, 520);
+          }, 180);
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function spawnShockwaves(color) {
+      for (let i = 0; i < 3; i++) {
+        setTimeout(() => {
+          const sw = document.createElement('div');
+          sw.className = 'shockwave';
+          sw.style.cssText = `left:50%;top:50%;width:${120+i*60}px;height:${120+i*60}px;border-color:${color};animation-delay:${i*.12}s;animation-duration:${.9+i*.15}s;`;
+          document.body.appendChild(sw);
+          setTimeout(() => sw.remove(), 1400);
+        }, i * 80);
+      }
+    }
+
+    function spawnParticles(color) {
+      const container = document.getElementById('ws-particles');
+      container.innerHTML = '';
+      for (let i = 0; i < 36; i++) {
+        const p = document.createElement('div');
+        p.className = 'ws-particle';
+        const size = 8 + Math.random() * 22;
+        const angle = Math.random() * 360;
+        const dist  = 150 + Math.random() * 400;
+        p.style.cssText = `width:${size}px;height:${size}px;background:${color};left:calc(50% - ${size/2}px);top:calc(50% - ${size/2}px);--tx:${Math.cos(angle*Math.PI/180)*dist}px;--ty:${Math.sin(angle*Math.PI/180)*dist}px;animation-delay:${Math.random()*.4}s;animation-duration:${1.2+Math.random()*.8}s;opacity:.9;`;
+        container.appendChild(p);
+      }
+    }
+
+    // ── CONFETTI ──────────────────────────────────────────────────────────
+    let confettiPieces = [], confettiRunning = false;
+    function launchConfetti(color) {
+      confettiRunning = false; // stop any existing loop before starting fresh
+      const canvas = document.getElementById('confetti-canvas');
+      canvas.style.display = 'block'; canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+      const ctx = canvas.getContext('2d');
+      const COLORS = [color, '#fbbf24', '#4ade80', '#ec4899', '#22d3ee', '#a78bfa', '#fff'];
+      confettiPieces = [];
+      for (let i = 0; i < 200; i++) {
+        confettiPieces.push({
+          x: Math.random() * canvas.width, y: -20 - Math.random() * canvas.height * .5,
+          vx: (Math.random()-.5)*5, vy: 3+Math.random()*5,
+          rot: Math.random()*Math.PI*2, rotV: (Math.random()-.5)*.2,
+          w: 8+Math.random()*14, h: 4+Math.random()*8,
+          color: COLORS[Math.floor(Math.random()*COLORS.length)], life: 1,
+        });
+      }
+      confettiRunning = true;
+      function step() {
+        if (!confettiRunning) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let alive = 0;
+        confettiPieces.forEach(p => {
+          p.x += p.vx; p.y += p.vy; p.vy += .12; p.vx *= .99; p.rot += p.rotV;
+          if (p.y > canvas.height + 20) { p.life = 0; return; }
+          alive++;
+          ctx.save(); ctx.globalAlpha = Math.min(1, p.life);
+          ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+          ctx.fillStyle = p.color; ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+          ctx.restore();
+        });
+        if (alive > 0) requestAnimationFrame(step);
+        else { confettiRunning = false; canvas.style.display = 'none'; }
+      }
+      requestAnimationFrame(step);
+      setTimeout(() => { confettiRunning = false; canvas.style.display = 'none'; }, 5000);
+    }
+
+    // ── TIMER ─────────────────────────────────────────────────────────────
+    const CIRC = 2 * Math.PI * 54;
+    function startTimer(duration, startTs) {
+      clearInterval(timerInterval);
+      timerRunning = true;
+      document.getElementById('timer-wrap').classList.remove('hidden');
+      timerInterval = setInterval(() => {
+        const elapsed   = (Date.now() - startTs) / 1000;
+        const remaining = Math.max(0, duration - elapsed);
+        const progress  = remaining / duration;
+        const arc = document.getElementById('timer-arc');
+        const num = document.getElementById('timer-num');
+        arc.style.strokeDashoffset = CIRC * (1 - progress);
+        num.textContent = Math.ceil(remaining);
+        arc.style.stroke = remaining > duration*.5 ? '#4ade80' : remaining > duration*.25 ? '#fbbf24' : '#f43f5e';
+        if (remaining <= 5 && remaining > 0) num.classList.add('pulse');
+        else num.classList.remove('pulse');
+        if (remaining <= 0) { clearInterval(timerInterval); timerRunning = false; }
+      }, 200);
+    }
+    function stopTimer() {
+      clearInterval(timerInterval); timerRunning = false;
+      document.getElementById('timer-wrap').classList.add('hidden');
+    }
+
+    // ── OPTION CARDS ──────────────────────────────────────────────────────
+    function renderOptionCards(containerId, options) {
+      const el = document.getElementById(containerId);
+      if (!el || !options?.length) return;
+      el.innerHTML = options.map((opt, i) => {
+        const c = OPT_COLORS[i % OPT_COLORS.length];
+        const l = OPT_LETTERS[i % OPT_LETTERS.length];
+        return `
+          <div class="option-card" style="border-color:${c}35;background:${c}0d;animation-delay:${i*80}ms">
+            <div class="heat-bg" style="background:${c}"></div>
+            <div class="display-opt-letter" style="background:${c}20;color:${c};border:2px solid ${c}40">${l}</div>
+            <span class="display-opt-text" style="color:#fff">${esc(opt)}</span>
+            <span class="display-opt-livepct" style="color:${c}"></span>
+          </div>`;
+      }).join('');
+    }
+
+    // ── RESULTS ───────────────────────────────────────────────────────────
+    function renderResults(results, question, modifier, scoreMultiplier) {
+      if (!results || !question) return;
+      const maxPct = Math.max(...Object.values(results).map(r => r.pct || 0), 0);
+      const container = document.getElementById('r-options');
+      container.innerHTML = '';
+      question.options.forEach((opt, i) => {
+        const r = results[opt] || { pct:0, points:0 };
+        const isWinner = r.pct === maxPct && maxPct > 0;
+        const c = OPT_COLORS[i % OPT_COLORS.length];
+        const multNote = (scoreMultiplier||1) > 1 ? ` × ${scoreMultiplier}` : '';
+        const row = document.createElement('div');
+        row.className = 'display-result-row' + (isWinner ? ' winner-spotlight' : '');
+        row.style.animationDelay = i * 100 + 'ms';
+        row.innerHTML = `
+          <div class="display-result-label">
+            <span class="opt-name">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:${c}22;color:${c};font-weight:900;font-size:.9rem;flex-shrink:0;border:1px solid ${c}40">${OPT_LETTERS[i]}</span>
+              ${esc(opt)}
+            </span>
+            <span class="pts-val ${isWinner?'winner':''}">${r.pct}%${multNote} → ${Math.round((r.points||0)*(scoreMultiplier||1))} pts</span>
+          </div>
+          <div class="display-bar-track">
+            <div class="display-bar-fill opt-${i} ${isWinner?'winner':''}" data-pct="${r.pct}"></div>
+          </div>`;
+        container.appendChild(row);
+      });
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        container.querySelectorAll('.display-bar-fill').forEach(el => { el.style.width = el.dataset.pct + '%'; });
+      }));
+
+      const modNote = document.getElementById('r-mod-note');
+      if (modifier === 'bankrupt')      { modNote.textContent = '💥 BANKRUPT — no points earned!'; modNote.style.color = 'var(--red)'; }
+      else if (modifier === 'double')   { modNote.textContent = '×2 Double Points active!'; modNote.style.color = 'var(--amber)'; }
+      else if (modifier === 'triple')   { modNote.textContent = '×3 Triple Points active!'; modNote.style.color = '#fb923c'; }
+      else if (modifier === 'underdog') { modNote.textContent = '🐎 Underdog Bonus — lowest % predictors earn +20 pts!'; modNote.style.color = 'var(--green)'; }
+      else if (modifier === 'jackpot')  { modNote.textContent = '🎰 Audience Jackpot — correct pickers earn a bonus!'; modNote.style.color = 'var(--amber)'; }
+      else if (modifier === 'riskIt')   { modNote.textContent = '🎲 Risk It — doubled-down players get 2× or nothing!'; modNote.style.color = 'var(--red)'; }
+      else modNote.textContent = '';
+    }
+
+    // ── LEADERBOARD ───────────────────────────────────────────────────────
+    function renderRevealedLB(contestants, oldRanks) {
+      if (!contestants || !Object.keys(contestants).length) {
+        document.getElementById('r-lb').classList.add('hidden'); return;
+      }
+      document.getElementById('r-lb').classList.remove('hidden');
+      const sorted = Object.values(contestants).sort((a,b) => b.score-a.score);
+      document.getElementById('r-lb-list').innerHTML = sorted.map((c,i) => {
+        const newRank = i + 1;
+        const oldRank = oldRanks[c.name] || newRank;
+        const diff    = oldRank - newRank;
+        let rankBadge = '';
+        if (diff > 0)      rankBadge = `<span class="rank-change rank-up">▲${diff}</span>`;
+        else if (diff < 0) rankBadge = `<span class="rank-change rank-down">▼${Math.abs(diff)}</span>`;
+        const streak = c.streak || 0;
+        const streakBadge = streak >= 2 ? `<span class="streak-flame">🔥×${streak}</span>` : '';
+        const rowClass = i===0 ? 'top-1' : i===1 ? 'top-2' : i===2 ? 'top-3' : '';
+        const rankClass = i===0 ? 'first' : i===1 ? 'second' : i===2 ? 'third' : '';
+        return `<div class="display-lb-row ${rowClass}" style="animation-delay:${i*80}ms" data-name="${esc(c.name)}">
+          <span class="display-lb-rank ${rankClass}">${newRank}</span>
+          <span class="display-lb-name">${esc(c.name)} ${streakBadge}</span>
+          ${rankBadge}
+          <span class="display-lb-score">${c.score} pts</span>
+        </div>`;
+      }).join('');
+    }
+
+    // ── LOCKED IN ─────────────────────────────────────────────────────────
+    function renderLockedIn(lockedNames, contestants) {
+      const grid = document.getElementById('locked-in-grid');
+      if (!grid || !contestants) return;
+      const names = Object.keys(contestants);
+      if (!names.length) { grid.innerHTML = ''; return; }
+      grid.innerHTML = names.map(name => {
+        const locked = (lockedNames || []).includes(name);
+        return `<div class="lock-card ${locked?'locked':'waiting'}">
+          <span style="font-weight:800">${esc(name)}</span>
+          <span class="lock-status">${locked?'✓':'…'}</span>
+        </div>`;
+      }).join('');
+    }
+
+    // ── SCORE DELTA ───────────────────────────────────────────────────────
+    function spawnDelta(name, pts) {
+      const lbList = document.getElementById('r-lb-list');
+      let targetEl = document.body;
+      if (lbList) {
+        const row = lbList.querySelector(`.display-lb-row[data-name="${CSS.escape(name)}"]`);
+        if (row) targetEl = row;
+      }
+      const el = document.createElement('div');
+      el.className = 'score-delta';
+      el.textContent = pts > 0 ? `+${pts}` : `${pts}`;
+      el.style.color = pts > 0 ? '#4ade80' : '#f43f5e';
+      document.body.appendChild(el);
+      const rect = targetEl.getBoundingClientRect();
+      el.style.left = (rect.right - 100) + 'px';
+      el.style.top  = (rect.top + window.scrollY) + 'px';
+      setTimeout(() => el.remove(), 2400);
+    }
+  </script>
+</body>
+</html>

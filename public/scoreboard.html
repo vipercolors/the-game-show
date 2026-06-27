@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scoreboard — The Game Show</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    html, body { height:100%; overflow:hidden; }
+    body {
+      display:flex; flex-direction:column;
+      background:radial-gradient(ellipse at 50% 20%, #1c0a3a 0%, #09090b 60%);
+    }
+
+    /* ── HEADER ── */
+    .sb-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:1rem 2rem; border-bottom:1px solid rgba(255,255,255,.06);
+      flex-shrink:0;
+    }
+    .sb-title {
+      font-family:'Playfair Display',serif; font-weight:900;
+      font-size:clamp(1.2rem,3vw,2rem); color:#fff; letter-spacing:-.01em;
+    }
+    .sb-title .accent { color:#a78bfa; }
+    .sb-round { font-weight:800; font-size:clamp(.75rem,1.5vw,1rem); color:#52525b; letter-spacing:.12em; text-transform:uppercase; }
+    .sb-phase { padding:.3rem .8rem; border-radius:8px; font-weight:700; font-size:.75rem; letter-spacing:.1em; text-transform:uppercase; }
+
+    /* ── MAIN AREA ── */
+    .sb-main { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:1.5rem 2rem; overflow:hidden; }
+
+    /* ── QUESTION BANNER ── */
+    #sb-question-wrap {
+      width:100%; max-width:1000px; text-align:center; margin-bottom:1.5rem;
+      animation:sbQIn .5s cubic-bezier(.22,.68,0,1.2);
+    }
+    @keyframes sbQIn { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:none} }
+    #sb-q-label { font-size:clamp(.7rem,1.2vw,.9rem); font-weight:800; letter-spacing:.2em; text-transform:uppercase; color:#52525b; margin-bottom:.4rem; }
+    #sb-q-text  { font-family:'Playfair Display',serif; font-size:clamp(1.2rem,3vw,2rem); font-weight:900; color:#fff; line-height:1.2; }
+
+    /* ── LEADERBOARD ── */
+    #sb-lb { width:100%; max-width:900px; }
+    .sb-row {
+      display:flex; align-items:center; gap:1rem;
+      padding:clamp(.9rem,2vw,1.5rem) clamp(1.2rem,3vw,2.5rem);
+      border-radius:20px; border:1px solid rgba(255,255,255,.07);
+      margin-bottom:.75rem; position:relative; overflow:hidden;
+      background:rgba(255,255,255,.03);
+      transition:all .6s cubic-bezier(.22,.68,0,1.2);
+    }
+    .sb-row.top-1 {
+      background:linear-gradient(135deg,rgba(251,191,36,.1) 0%,rgba(139,92,246,.08) 100%);
+      border-color:rgba(251,191,36,.3);
+      box-shadow:0 0 40px rgba(251,191,36,.1), inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    .sb-row.top-2 { background:rgba(148,163,184,.06); border-color:rgba(148,163,184,.2); }
+    .sb-row.top-3 { background:rgba(180,120,60,.06); border-color:rgba(180,120,60,.2); }
+    .sb-row.moved-up   { animation:rowUp .6s cubic-bezier(.22,.68,0,1.2); }
+    .sb-row.moved-down { animation:rowDown .6s ease-in; }
+    @keyframes rowUp   { from{transform:translateY(30px);opacity:0} to{transform:none;opacity:1} }
+    @keyframes rowDown { from{transform:translateY(-10px)} to{transform:none} }
+
+    .sb-rank-num {
+      font-family:'Playfair Display',serif; font-weight:900;
+      font-size:clamp(1.5rem,4vw,3rem); min-width:clamp(2rem,4vw,3.5rem);
+      text-align:center; flex-shrink:0;
+    }
+    .sb-rank-num.r1 { color:#fbbf24; text-shadow:0 0 30px rgba(251,191,36,.6); }
+    .sb-rank-num.r2 { color:#94a3b8; }
+    .sb-rank-num.r3 { color:#b4783c; }
+
+    .sb-info { flex:1; min-width:0; }
+    .sb-name {
+      font-family:'Playfair Display',serif; font-weight:900;
+      font-size:clamp(1.2rem,3.5vw,2.5rem); color:#fff; line-height:1; white-space:nowrap;
+      overflow:hidden; text-overflow:ellipsis;
+    }
+    .sb-sub { font-size:clamp(.65rem,1.2vw,.9rem); color:#52525b; margin-top:.2rem; display:flex; gap:1rem; align-items:center; }
+    .sb-streak { color:#fb923c; font-weight:700; }
+
+    .sb-score {
+      font-family:'Playfair Display',serif; font-weight:900;
+      font-size:clamp(1.8rem,5vw,4rem); text-align:right; flex-shrink:0;
+      background:linear-gradient(135deg,#a78bfa,#ec4899);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text; transition:all .4s;
+    }
+    .sb-score.bump { animation:scoreBump .4s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes scoreBump { 50%{transform:scale(1.3)} }
+
+    .sb-rank-change { font-size:clamp(.7rem,1.2vw,.9rem); font-weight:900; padding:.25rem .55rem; border-radius:8px; flex-shrink:0; }
+    .rank-up   { background:rgba(74,222,128,.15); color:#4ade80; border:1px solid rgba(74,222,128,.3); }
+    .rank-down { background:rgba(244,63,94,.15);  color:#f43f5e; border:1px solid rgba(244,63,94,.3); }
+
+    /* ── RESULT BARS (during/after voting) ── */
+    #sb-results {
+      width:100%; max-width:800px; margin-bottom:1.5rem;
+      animation:sbQIn .5s cubic-bezier(.22,.68,0,1.2);
+    }
+    .sb-bar-row { display:flex; align-items:center; gap:1rem; margin-bottom:.85rem; }
+    .sb-bar-label { font-weight:700; font-size:clamp(.9rem,2vw,1.3rem); min-width:160px; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sb-bar-track { flex:1; height:clamp(24px,4vw,38px); background:rgba(255,255,255,.06); border-radius:99px; overflow:hidden; }
+    .sb-bar-fill  { height:100%; border-radius:99px; width:0%; transition:width 1.4s cubic-bezier(.22,.68,0,1.2); }
+    .sb-bar-pct   { font-weight:900; font-size:clamp(.9rem,2vw,1.3rem); min-width:50px; color:#a78bfa; }
+
+    /* ── DELTA FLOATER ── */
+    .score-delta {
+      position:fixed; z-index:999; font-family:'Playfair Display',serif;
+      font-size:clamp(2rem,4vw,3rem); font-weight:900; pointer-events:none;
+      animation:deltaFloat 2.4s ease-out forwards;
+    }
+    @keyframes deltaFloat {
+      0%  { transform:translateY(0) scale(1); opacity:1; }
+      40% { transform:translateY(-60px) scale(1.15); opacity:1; }
+      100%{ transform:translateY(-160px) scale(.8); opacity:0; }
+    }
+
+    .sb-empty { color:#52525b; font-size:clamp(1rem,2vw,1.4rem); font-weight:700; text-align:center; }
+
+    /* ── MODE TOGGLE ── */
+    #mode-toggle {
+      position:fixed; bottom:1.5rem; right:1.5rem; z-index:50;
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  </style>
+</head>
+<body>
+
+  <div class="sb-header">
+    <div>
+      <div class="sb-title">The<span class="accent">.</span> Game Show</div>
+      <div class="sb-round" id="sb-round">Waiting to start…</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <span id="sb-phase" class="sb-phase badge badge-lobby">Lobby</span>
+      <div style="text-align:right">
+        <div id="sb-voter-count" style="font-size:clamp(.8rem,1.5vw,1.1rem);color:#52525b;font-weight:700"></div>
+        <div id="sb-mod" style="font-size:clamp(.65rem,1.2vw,.85rem);color:#fbbf24;font-weight:700;margin-top:.1rem"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-main">
+    <!-- Current question (shown during voting/closed/revealed) -->
+    <div id="sb-question-wrap" class="hidden">
+      <div id="sb-q-label">Current Question</div>
+      <div id="sb-q-text"></div>
+    </div>
+
+    <!-- Result bars -->
+    <div id="sb-results" class="hidden"></div>
+
+    <!-- Leaderboard -->
+    <div id="sb-lb"></div>
+    <div id="sb-empty" class="sb-empty hidden">Waiting for players…</div>
+  </div>
+
+  <!-- Toggle between show-question and show-only-scores -->
+  <div id="mode-toggle">
+    <button class="btn btn-ghost btn-sm" onclick="toggleMode()" id="mode-btn">Scores only</button>
+  </div>
+
+  <script src="wheel-segments.js"></script>
+  <script src="sounds.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io({ query: { role: 'display' } });
+    let state = {}, prevRanks = {};
+    let scoresOnlyMode = false;
+
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    const OPT_COLORS  = ['#8b5cf6','#ec4899','#22d3ee','#4ade80','#f97316','#a855f7','#14b8a6','#eab308'];
+    const OPT_LETTERS = ['A','B','C','D','E','F','G','H'];
+
+    socket.on('state', s => { state = s; render(s); });
+    socket.on('vote-tick', ({ votes, total }) => {
+      state.votes = votes; state.voterCount = total;
+      document.getElementById('sb-voter-count').textContent = total > 0 ? `${total} votes` : '';
+      if (state.phase === 'voting' || state.phase === 'closed') renderBars(state.question, votes, total);
+    });
+    socket.on('score-deltas', deltas => {
+      setTimeout(() => {
+        Object.entries(deltas).forEach(([name, pts], i) => {
+          if (pts !== 0) setTimeout(() => spawnDelta(name, pts), i * 200);
+        });
+      }, 600);
+    });
+
+    function render(s) {
+      const { phase, round, maxRounds, question, contestants, results, modifier, scoreMultiplier, voterCount } = s;
+
+      // Header
+      const phaseLabels = { lobby:'Lobby', spinning:'Spinning', 'wheel-result':'Category Landed', voting:'Voting Open', closed:'Voting Closed', revealed:'Results!' };
+      const phaseBadge = document.getElementById('sb-phase');
+      phaseBadge.textContent = phaseLabels[phase] || phase;
+      phaseBadge.className = 'sb-phase badge badge-' + (phase || 'lobby');
+
+      const roundEl = document.getElementById('sb-round');
+      if (round > 0) {
+        const maxStr = maxRounds > 0 ? ` / ${maxRounds}` : '';
+        roundEl.textContent = `Round ${round}${maxStr}`;
+      } else roundEl.textContent = 'Waiting to start…';
+
+      const modEl = document.getElementById('sb-mod');
+      if (modifier) {
+        const info = window.MODIFIER_INFO?.[modifier];
+        modEl.textContent = (info?.badge||'') + ' ' + (info?.label||modifier);
+        if (scoreMultiplier > 1) modEl.textContent += ` ×${scoreMultiplier}`;
+      } else modEl.textContent = '';
+
+      document.getElementById('sb-voter-count').textContent = voterCount > 0 ? `${voterCount} votes` : '';
+
+      // Question display
+      const showQ = !scoresOnlyMode && question && ['voting','closed','revealed'].includes(phase);
+      const qWrap = document.getElementById('sb-question-wrap');
+      qWrap.classList.toggle('hidden', !showQ);
+      if (showQ) document.getElementById('sb-q-text').textContent = question.text;
+
+      // Results bars
+      const showBars = !scoresOnlyMode && ['voting','closed','revealed'].includes(phase) && question;
+      const resultsEl = document.getElementById('sb-results');
+      resultsEl.classList.toggle('hidden', !showBars);
+      if (showBars) {
+        if (phase === 'revealed' && results) {
+          renderBarsFromResults(question, results, scoreMultiplier);
+        } else {
+          // Use vote-tick-accumulated votes (s.votes not in pubState; state.votes is set by vote-tick)
+          renderBars(question, state.votes || {}, state.voterCount || voterCount || 0);
+        }
+      }
+
+      // Leaderboard
+      renderLB(contestants);
+    }
+
+    function renderLB(contestants) {
+      const lb = document.getElementById('sb-lb');
+      const empty = document.getElementById('sb-empty');
+      if (!contestants || !Object.keys(contestants).length) {
+        lb.innerHTML = ''; empty.classList.remove('hidden'); return;
+      }
+      empty.classList.add('hidden');
+
+      const sorted = Object.values(contestants).sort((a,b) => b.score-a.score);
+      const newRanks = {};
+      sorted.forEach((c,i) => { newRanks[c.name] = i+1; });
+
+      lb.innerHTML = sorted.map((c, i) => {
+        const rank = i + 1;
+        const old  = prevRanks[c.name] || rank;
+        const diff = old - rank;
+        const rankCls = rank===1?'r1':rank===2?'r2':rank===3?'r3':'';
+        const rowCls  = rank===1?'top-1':rank===2?'top-2':rank===3?'top-3':'';
+        const moveCls = diff > 0 ? ' moved-up' : diff < 0 ? ' moved-down' : '';
+        let rankBadge = '';
+        if (diff > 0)      rankBadge = `<span class="sb-rank-change rank-up">▲${diff}</span>`;
+        else if (diff < 0) rankBadge = `<span class="sb-rank-change rank-down">▼${Math.abs(diff)}</span>`;
+        const streak = c.streak || 0;
+        const streakStr = streak >= 2 ? `<span class="sb-streak">🔥 ${streak} streak</span>` : '';
+        return `<div class="sb-row ${rowCls}${moveCls}" style="animation-delay:${i*60}ms">
+          <div class="sb-rank-num ${rankCls}">${rank}</div>
+          <div class="sb-info">
+            <div class="sb-name">${esc(c.name)}</div>
+            <div class="sb-sub">${streakStr}</div>
+          </div>
+          ${rankBadge}
+          <div class="sb-score" data-name="${esc(c.name)}">${c.score} <span style="font-size:.45em;color:#52525b;-webkit-text-fill-color:#52525b">pts</span></div>
+        </div>`;
+      }).join('');
+
+      prevRanks = newRanks;
+    }
+
+    function renderBars(question, votes, total) {
+      if (!question) return;
+      const el = document.getElementById('sb-results');
+      const existing = el.querySelectorAll('.sb-bar-fill');
+      const existingPcts = el.querySelectorAll('.sb-bar-pct');
+      if (existing.length === question.options.length) {
+        // Update in-place — avoids rebuilding DOM on every vote-tick
+        question.options.forEach((opt, i) => {
+          const count = (votes||{})[opt] || 0;
+          const pct = total > 0 ? Math.round(count/total*100) : 0;
+          existing[i].style.width = pct + '%';
+          if (existingPcts[i]) existingPcts[i].textContent = pct + '%';
+        });
+        return;
+      }
+      el.innerHTML = question.options.map((opt, i) => {
+        const c = OPT_COLORS[i % OPT_COLORS.length];
+        return `<div class="sb-bar-row">
+          <span class="sb-bar-label" style="color:${c}">${OPT_LETTERS[i]}. ${esc(opt)}</span>
+          <div class="sb-bar-track"><div class="sb-bar-fill" data-i="${i}" style="width:0%;background:${c}"></div></div>
+          <span class="sb-bar-pct" style="color:${c}">0%</span>
+        </div>`;
+      }).join('');
+      // Trigger transition from 0%
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        question.options.forEach((opt, i) => {
+          const count = (votes||{})[opt] || 0;
+          const pct = total > 0 ? Math.round(count/total*100) : 0;
+          el.querySelectorAll('.sb-bar-fill')[i].style.width = pct + '%';
+          el.querySelectorAll('.sb-bar-pct')[i].textContent = pct + '%';
+        });
+      }));
+    }
+
+    function renderBarsFromResults(question, results, scoreMultiplier) {
+      if (!question || !results) return;
+      const maxPct = Math.max(...Object.values(results).map(r=>r.pct||0),0);
+      const el = document.getElementById('sb-results');
+      el.innerHTML = question.options.map((opt, i) => {
+        const r = results[opt] || {pct:0, points:0};
+        const c = OPT_COLORS[i % OPT_COLORS.length];
+        const isW = r.pct === maxPct && maxPct > 0;
+        const multNote = (scoreMultiplier||1) > 1 ? ` ×${scoreMultiplier}` : '';
+        return `<div class="sb-bar-row">
+          <span class="sb-bar-label" style="color:${isW?'#4ade80':c}">${OPT_LETTERS[i]}. ${esc(opt)}${isW?' ★':''}</span>
+          <div class="sb-bar-track"><div class="sb-bar-fill" data-pct="${r.pct}" style="width:0%;background:${isW?'#4ade80':c}"></div></div>
+          <span class="sb-bar-pct" style="color:${isW?'#4ade80':c}">${r.pct}%${multNote}</span>
+        </div>`;
+      }).join('');
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        el.querySelectorAll('.sb-bar-fill').forEach(bar => { bar.style.width = bar.dataset.pct + '%'; });
+      }));
+    }
+
+    function spawnDelta(name, pts) {
+      const scoreEl = document.querySelector(`.sb-score[data-name="${CSS.escape(name)}"]`);
+      const el = document.createElement('div');
+      el.className = 'score-delta';
+      el.textContent = pts > 0 ? `+${pts}` : `${pts}`;
+      el.style.color = pts > 0 ? '#4ade80' : '#f43f5e';
+      document.body.appendChild(el);
+      if (scoreEl) {
+        const rect = scoreEl.getBoundingClientRect();
+        el.style.left = rect.left + 'px';
+        el.style.top  = (rect.top + window.scrollY) + 'px';
+        scoreEl.classList.add('bump');
+        setTimeout(() => scoreEl.classList.remove('bump'), 500);
+      } else {
+        el.style.left = (window.innerWidth / 2) + 'px';
+        el.style.top  = (window.innerHeight / 2) + 'px';
+      }
+      setTimeout(() => el.remove(), 2600);
+    }
+
+    function toggleMode() {
+      scoresOnlyMode = !scoresOnlyMode;
+      document.getElementById('mode-btn').textContent = scoresOnlyMode ? 'Show question' : 'Scores only';
+      if (state) render(state);
+    }
+  </script>
+</body>
+</html>

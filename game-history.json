@@ -1,0 +1,148 @@
+[
+  {
+    "phase": "lobby",
+    "round": 1,
+    "code": null,
+    "timerDuration": 60,
+    "timerStart": null,
+    "answerCount": 4,
+    "maxRounds": 0,
+    "spinsPerGame": 0,
+    "spinsUsed": 5,
+    "qrHidden": false,
+    "activePreset": {
+      "id": "e5oj80e",
+      "name": "Game Show",
+      "categories": [
+        "cerealMascot",
+        "themePark",
+        "musicDecade",
+        "hotSauce",
+        "mexicanFastFood",
+        "cake",
+        "sneakerBrand",
+        "fountainDrink",
+        "fruit",
+        "candyBar",
+        "boardGame"
+      ],
+      "answerCount": 4,
+      "createdAt": "2026-06-20T05:43:35.345Z"
+    },
+    "authorizedVoters": {},
+    "question": null,
+    "votes": {},
+    "voterIds": {},
+    "predictions": {},
+    "contestants": {
+      "a": {
+        "name": "a",
+        "score": 0,
+        "streak": 0
+      },
+      "b": {
+        "name": "b",
+        "score": 0,
+        "streak": 0
+      },
+      "c": {
+        "name": "c",
+        "score": 0,
+        "streak": 0
+      },
+      "d": {
+        "name": "d",
+        "score": 0,
+        "streak": 0
+      }
+    },
+    "results": null,
+    "modifier": null,
+    "scoreMultiplier": 1,
+    "riskItPlayers": [],
+    "secondChanceOpen": false,
+    "wheelSegmentIndex": null,
+    "wheelSegment": null,
+    "wheelSegments": [
+      {
+        "id": "sneakerBrand",
+        "label": "Sneaker Brand",
+        "type": "category",
+        "color": "#7c3aed"
+      },
+      {
+        "id": "fountainDrink",
+        "label": "Fountain Drink",
+        "type": "category",
+        "color": "#d97706"
+      },
+      {
+        "id": "boardGame",
+        "label": "Board Game",
+        "type": "category",
+        "color": "#e11d48"
+      },
+      {
+        "id": "mexicanFastFood",
+        "label": "Mexican Fast Food",
+        "type": "category",
+        "color": "#65a30d"
+      },
+      {
+        "id": "double",
+        "label": "DOUBLE POINTS",
+        "type": "modifier",
+        "color": "#fbbf24"
+      },
+      {
+        "id": "cerealMascot",
+        "label": "Cereal Mascot",
+        "type": "category",
+        "color": "#65a30d"
+      },
+      {
+        "id": "triple",
+        "label": "TRIPLE POINTS",
+        "type": "modifier",
+        "color": "#fb923c"
+      },
+      {
+        "id": "cake",
+        "label": "Cake",
+        "type": "category",
+        "color": "#7c3aed"
+      },
+      {
+        "id": "fruit",
+        "label": "Fruit",
+        "type": "category",
+        "color": "#d97706"
+      },
+      {
+        "id": "hotSauce",
+        "label": "Hot Sauce",
+        "type": "category",
+        "color": "#6366f1"
+      },
+      {
+        "id": "themePark",
+        "label": "Theme Park",
+        "type": "category",
+        "color": "#d97706"
+      },
+      {
+        "id": "candyBar",
+        "label": "Candy Bar",
+        "type": "category",
+        "color": "#ca8a04"
+      },
+      {
+        "id": "musicDecade",
+        "label": "Music Decade",
+        "type": "category",
+        "color": "#db2777"
+      }
+    ],
+    "savedAt": "2026-06-20T19:05:49.363Z"
+  }
+]

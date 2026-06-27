@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game History — The Game Show</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .page { max-width: 800px; margin: 0 auto; padding: 2rem 1rem; }
+    .game-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; cursor: pointer; transition: all .2s; }
+    .game-card:hover { border-color: var(--purple); background: var(--bg2); }
+    .game-date { font-size: .85rem; color: var(--muted); }
+    .game-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem; font-size: .9rem; }
+    .stat-item { text-align: center; }
+    .stat-label { color: var(--muted); font-size: .75rem; text-transform: uppercase; }
+    .stat-value { font-size: 1.3rem; font-weight: 700; color: var(--purple-lt); margin-top: .3rem; }
+    .winner-name { font-weight: 700; color: var(--amber); font-size: 1.05rem; }
+    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+    #history-list { display: flex; flex-direction: column; }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <span class="wordmark" style="font-size:1.1rem">The Show<span class="accent">.</span> <span style="font-size:.55em;letter-spacing:.08em;color:var(--muted)">HISTORY</span></span>
+    <div style="margin-left:auto">
+      <a href="/host" class="btn btn-ghost btn-sm">← Back to Host</a>
+    </div>
+  </div>
+
+  <div class="page">
+    <h1 style="font-family:'Playfair Display',serif;margin-bottom:2rem">Game History</h1>
+    <div id="history-list"></div>
+    <div id="empty-state" class="empty-state">
+      <p style="font-size:2rem;margin-bottom:1rem">?</p>
+      <p>No games saved yet. Start a game to see history here!</p>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    async function loadHistory() {
+      try {
+        const res = await fetch('/api/history');
+        const games = await res.json();
+        const list = document.getElementById('history-list');
+        const empty = document.getElementById('empty-state');
+
+        if (games.length === 0) {
+          list.style.display = 'none';
+          empty.style.display = 'block';
+          return;
+        }
+
+        list.style.display = 'flex';
+        empty.style.display = 'none';
+        list.innerHTML = games.map(g => {
+          if (!g.contestants || g.contestants.length === 0) return '';
+          const sorted = g.contestants.sort((a, b) => b.score - a.score);
+          const winner = sorted[0];
+          const date = new Date(g.date).toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          });
+          return `
+            <div class="game-card">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.75rem">
+                <div>
+                  <span style="font-weight:700;font-size:1.1rem">${g.contestants.map(c => esc(c.name)).join(' vs ')}</span>
+                  <div class="game-date">${date}</div>
+                </div>
+                <span class="badge badge-lobby">Round ${g.round}</span>
+              </div>
+              <div class="game-stats">
+                <div class="stat-item">
+                  <div class="stat-label">Winner</div>
+                  <div class="stat-value winner-name">${esc(winner.name)}</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Winning Score</div>
+                  <div class="stat-value">${winner.score}</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Contestants</div>
+                  <div class="stat-value">${g.contestants.length}</div>
+                </div>
+              </div>
+              <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:.85rem;color:var(--muted)">
+                ${sorted.map((c, i) => `<div>#${i+1}: ${esc(c.name)} — ${c.score} pts</div>`).join('')}
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (e) {
+        console.error('Failed to load history:', e);
+      }
+    }
+
+    window.addEventListener('load', loadHistory);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) loadHistory(); });
+  </script>
+</body>
+</html>

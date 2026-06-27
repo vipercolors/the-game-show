@@ -1,0 +1,13 @@
+{
+  "name": "soul-game-show",
+  "version": "1.0.0",
+  "description": "Black Soul Music Game Show — predict what the crowd picks",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.6.1"
+  }
+}
