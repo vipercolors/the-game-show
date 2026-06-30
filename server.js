@@ -53,7 +53,7 @@ app.get('/api/game/:id', (req, res) => {
     'http://localhost:5000',
   ];
   const corsOpts = cors({ origin: ALLOWED, methods: ['GET','POST','OPTIONS'], credentials: true });
-  app.options('/api/stripe/*', corsOpts);
+  app.options('*', corsOpts);
   app.use('/api/stripe', corsOpts);
 
   async function requireAuth(req, res, next) {
