@@ -1,0 +1,72 @@
+{
+  "rules": {
+    ".read": true,
+
+    "game": {
+      ".write": "auth != null && (auth.token.email == 'vipercolors@gmail.com' || auth.token.host == true)",
+      "phase": {
+        ".validate": "newData.isString() && newData.val().matches(/^(lobby|spinning|wheel-result|voting|closed|revealed)$/)"
+      },
+      "modifier": {
+        ".validate": "!newData.exists() || (newData.isString() && newData.val().matches(/^(double|triple|riskIt|golden|underdog|jackpot|secondChance|bankrupt|platinum|audience)$/))"
+      },
+      "scoreMultiplier": {
+        ".validate": "!newData.exists() || newData.isNumber()"
+      }
+    },
+
+    "votes": {
+      ".write": "auth != null && (auth.token.email == 'vipercolors@gmail.com' || auth.token.host == true)",
+      "$voterId": {
+        ".write": "root.child('authorizedVoters').child($voterId).val() === true && root.child('game/phase').val() === 'voting'",
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 100"
+      }
+    },
+
+    "predictions": {
+      ".write": "auth != null && (auth.token.email == 'vipercolors@gmail.com' || auth.token.host == true)",
+      "$name": {
+        ".write": "root.child('game/phase').val() === 'voting'",
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 100"
+      }
+    },
+
+    "riskItPlayers": {
+      ".write": "auth != null && (auth.token.email == 'vipercolors@gmail.com' || auth.token.host == true)",
+      "$name": {
+        ".write": "root.child('game/phase').val() === 'voting'",
+        ".validate": "newData.isBoolean()"
+      }
+    },
+
+    "authorizedVoters": {
+      ".write": "auth != null && (auth.token.email == 'vipercolors@gmail.com' || auth.token.host == true)",
+      "$voterId": {
+        ".write": true,
+        ".validate": "newData.isBoolean()"
+      }
+    },
+
+    "scoreDeltas": {
+      ".write": "auth != null && (auth.token.email == 'vipercolors@gmail.com' || auth.token.host == true)",
+      "$name": {
+        ".validate": "newData.isNumber()"
+      }
+    },
+
+    "presets": {
+      ".write": "auth != null && (auth.token.email == 'vipercolors@gmail.com' || auth.token.host == true)"
+    },
+
+    "history": {
+      ".write": "auth != null && (auth.token.email == 'vipercolors@gmail.com' || auth.token.host == true)"
+    },
+
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": false
+      }
+    }
+  }
+}

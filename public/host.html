@@ -12,19 +12,12 @@
     .col { padding: 1rem; border-right: 1px solid var(--border); overflow-y: auto; }
     .col:last-child { border-right: none; }
 
-    /* Prediction grid */
     .pred-grid { width:100%; border-collapse:separate; border-spacing:0 4px; }
     .pred-grid th { font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); padding:.25rem .4rem; text-align:center; }
     .pred-grid th:first-child { text-align:left; }
     .pred-grid td { padding:2px 3px; }
     .pred-grid td:first-child { padding-left:0; font-weight:600; font-size:.8rem; white-space:nowrap; }
-    .pred-cell {
-      width:100%; padding:.28rem .3rem;
-      background:var(--bg2); border:1px solid var(--border); border-radius:5px;
-      color:var(--muted); font-size:.65rem; font-weight:500; cursor:pointer;
-      text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-      max-width:78px; transition:all .12s;
-    }
+    .pred-cell { width:100%; padding:.28rem .3rem; background:var(--bg2); border:1px solid var(--border); border-radius:5px; color:var(--muted); font-size:.65rem; font-weight:500; cursor:pointer; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:78px; transition:all .12s; }
     .pred-cell:hover { border-color:var(--purple); color:var(--purple-lt); }
     .pred-cell.sel-0{background:rgba(139,92,246,.2);border-color:#8b5cf6;color:#c4b5fd}
     .pred-cell.sel-1{background:rgba(236,72,153,.2);border-color:#ec4899;color:#fbcfe8}
@@ -35,7 +28,6 @@
     .pred-cell.sel-6{background:rgba(20,184,166,.2);border-color:#14b8a6;color:#99f6e4}
     .pred-cell.sel-7{background:rgba(234,179,8,.2);border-color:#eab308;color:#fef08a}
 
-    /* Player setup */
     .player-inputs { display:flex; flex-direction:column; gap:.35rem; }
     .player-row { display:flex; align-items:center; gap:.4rem; }
     .player-num { font-weight:700; color:var(--muted); min-width:1.1rem; font-size:.78rem; }
@@ -52,57 +44,29 @@
 
     .ans-btn { min-width:34px; padding:.28rem .45rem; font-size:.82rem; font-weight:700; }
     .ans-btn.active { background:var(--purple); color:#fff; border-color:var(--purple); }
-
     .ctrl-btn { width:100%; margin-bottom:.45rem; }
 
-    /* ── START NEW GAME MODAL ── */
-    #builder-modal {
-      display:none; position:fixed; inset:0; z-index:300;
-      background:rgba(0,0,0,.75); backdrop-filter:blur(6px);
-      align-items:flex-start; justify-content:center; padding:1rem;
-      overflow-y:auto;
-    }
+    #builder-modal { display:none; position:fixed; inset:0; z-index:300; background:rgba(0,0,0,.75); backdrop-filter:blur(6px); align-items:flex-start; justify-content:center; padding:1rem; overflow-y:auto; }
     #builder-modal.open { display:flex; }
-    .builder-box {
-      background:var(--card); border:1px solid var(--border); border-radius:18px;
-      padding:1.5rem; width:820px; max-width:97vw; margin:auto;
-      display:flex; flex-direction:column; gap:1.1rem;
-    }
+    .builder-box { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:1.5rem; width:820px; max-width:97vw; margin:auto; display:flex; flex-direction:column; gap:1.1rem; }
     .builder-cols { display:grid; grid-template-columns:1fr 1fr; gap:1.1rem; }
     @media (max-width:660px) { .builder-cols { grid-template-columns:1fr; } }
     .builder-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:.35rem; }
-    .cat-check {
-      display:flex; align-items:center; gap:.35rem;
-      background:var(--bg2); border:1px solid var(--border); border-radius:6px;
-      padding:.3rem .55rem; cursor:pointer; font-size:.75rem; font-weight:500;
-      transition:all .12s; user-select:none;
-    }
+    .cat-check { display:flex; align-items:center; gap:.35rem; background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:.3rem .55rem; cursor:pointer; font-size:.75rem; font-weight:500; transition:all .12s; user-select:none; }
     .cat-check input[type=checkbox] { accent-color:var(--purple); }
     .cat-check:has(input:checked) { border-color:var(--purple); background:rgba(139,92,246,.12); color:var(--purple-lt); }
 
-    /* Answer picker panel */
-    #answer-picker-panel {
-      background:var(--bg2); border:1px solid var(--border); border-radius:10px;
-      padding:.85rem; max-height:340px; overflow-y:auto;
-    }
-    .answer-check {
-      display:flex; align-items:center; gap:.35rem;
-      padding:.25rem .4rem; border-radius:5px; cursor:pointer;
-      font-size:.78rem; font-weight:500; user-select:none; transition:background .1s;
-    }
+    #answer-picker-panel { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:.85rem; max-height:340px; overflow-y:auto; }
+    .answer-check { display:flex; align-items:center; gap:.35rem; padding:.25rem .4rem; border-radius:5px; cursor:pointer; font-size:.78rem; font-weight:500; user-select:none; transition:background .1s; }
     .answer-check:hover { background:rgba(139,92,246,.08); }
     .answer-check input[type=checkbox] { accent-color:var(--purple); }
     .answer-check.pinned { color:var(--amber); }
     .answer-check.pinned input { opacity:.5; cursor:not-allowed; }
 
-    .preset-row {
-      display:flex; align-items:center; gap:.5rem;
-      padding:.45rem .7rem; background:var(--bg2); border:1px solid var(--border); border-radius:8px;
-    }
+    .preset-row { display:flex; align-items:center; gap:.5rem; padding:.45rem .7rem; background:var(--bg2); border:1px solid var(--border); border-radius:8px; }
     .preset-name { flex:1; font-weight:600; font-size:.83rem; }
     .preset-meta { font-size:.68rem; color:var(--muted); }
 
-    /* Settings grid */
     .setting-row { display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem; flex-wrap:wrap; }
     .setting-label { font-size:.72rem; font-weight:700; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; min-width:100px; }
 
@@ -117,31 +81,26 @@
     <span id="phase-badge" class="badge badge-lobby">Lobby</span>
     <div style="margin-left:auto;display:flex;gap:.4rem">
       <button class="btn btn-primary btn-sm" onclick="openBuilder()">+ Start New Game</button>
-      <button class="btn btn-ghost btn-sm" id="qr-toggle-btn" onclick="toggleQR()" title="Show/hide QR code and join code on the display screen">Hide QR</button>
-      <button class="btn btn-ghost btn-sm" id="wordmark-toggle-btn" onclick="toggleWordmark()" title="Show/hide 'The Game Show' title on the display lobby screen">Hide Title</button>
+      <button class="btn btn-ghost btn-sm" id="qr-toggle-btn" onclick="toggleQR()" title="Show/hide QR code">Hide QR</button>
+      <button class="btn btn-ghost btn-sm" id="wordmark-toggle-btn" onclick="toggleWordmark()" title="Show/hide title on display">Hide Title</button>
       <a href="/history" class="btn btn-ghost btn-sm" style="text-decoration:none">History</a>
-      <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="if(confirm('Reset game?')) socket.emit('host:reset')">Reset</button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="if(confirm('Reset game?')) doReset()">Reset</button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--muted)" onclick="signOut()" title="Sign out">Sign Out</button>
     </div>
   </div>
 
-  <!-- ── START NEW GAME MODAL ── -->
   <div id="builder-modal">
     <div class="builder-box">
       <div style="display:flex;align-items:center;gap:.75rem">
         <div class="col-title" style="margin:0;font-size:1.1rem">Start New Game</div>
         <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="closeBuilder()">✕ Close</button>
       </div>
-
-      <!-- Saved presets -->
       <div>
         <div class="col-title" style="margin-bottom:.5rem">Saved Presets</div>
         <div id="preset-list" style="display:flex;flex-direction:column;gap:.35rem"></div>
         <p id="no-presets" class="text-muted" style="font-size:.75rem">No saved presets yet.</p>
       </div>
-
       <hr class="divider">
-
-      <!-- Game settings row -->
       <div>
         <div class="col-title" style="margin-bottom:.65rem">Game Settings</div>
         <div class="setting-row">
@@ -174,10 +133,7 @@
           </div>
         </div>
       </div>
-
       <hr class="divider">
-
-      <!-- Category picker + Answer picker side by side -->
       <div class="builder-cols">
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
@@ -190,7 +146,6 @@
           <input type="text" id="builder-cat-search" class="input" placeholder="Search…" style="font-size:.75rem;padding:.3rem .6rem;margin-bottom:.4rem;width:100%" oninput="filterBuilderCats(this.value)">
           <div class="builder-grid" id="builder-cat-grid" style="max-height:280px;overflow-y:auto"></div>
         </div>
-
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
             <div class="col-title" style="margin:0" id="answer-picker-title">Answer Picker</div>
@@ -200,11 +155,10 @@
               <button class="btn btn-ghost btn-sm" style="font-size:.68rem" onclick="apTopN()">Top N</button>
             </div>
           </div>
-          <p id="answer-picker-hint" class="text-muted" style="font-size:.75rem">Click a category to pick specific answers, or leave unchecked to use Top N.</p>
+          <p id="answer-picker-hint" class="text-muted" style="font-size:.75rem">Click a category to pick specific answers.</p>
           <div id="answer-picker-panel" style="display:none"></div>
         </div>
       </div>
-
       <div style="display:flex;gap:.65rem;margin-top:.5rem">
         <input id="preset-name-input" class="input" placeholder="Preset name (optional)" style="flex:1;font-size:.82rem">
         <button class="btn btn-ghost btn-sm" onclick="savePreset()">💾 Save</button>
@@ -214,11 +168,7 @@
   </div>
 
   <div class="main">
-
-    <!-- LEFT: Wheel + Question picker -->
     <div class="col" style="display:flex;flex-direction:column;gap:.9rem">
-
-      <!-- Game Code -->
       <div>
         <div class="col-title">Audience Code</div>
         <div class="code-box">
@@ -230,10 +180,9 @@
             <canvas id="host-qr"></canvas>
           </div>
         </div>
-        <button class="btn btn-ghost btn-sm btn-block mt-2" onclick="socket.emit('host:gen-code')">Generate Code</button>
+        <button class="btn btn-ghost btn-sm btn-block mt-2" onclick="genCode()">Generate Code</button>
       </div>
 
-      <!-- Timer -->
       <div>
         <div class="col-title">Voting Timer</div>
         <div style="display:flex;gap:.3rem;flex-wrap:wrap">
@@ -245,7 +194,6 @@
         </div>
       </div>
 
-      <!-- Answer count (live) -->
       <div>
         <div class="col-title">Answers Shown</div>
         <div style="display:flex;gap:.28rem;flex-wrap:wrap" id="ans-count-btns">
@@ -263,7 +211,6 @@
         </div>
       </div>
 
-      <!-- Wheel -->
       <div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">
           <div class="col-title" style="margin:0">Wheel</div>
@@ -274,7 +221,6 @@
         <div id="spins-left" class="text-muted" style="text-align:center;font-size:.7rem;margin-top:.3rem"></div>
       </div>
 
-      <!-- Wheel result -->
       <div id="wheel-result-area" class="hidden">
         <div class="col-title">Landed On</div>
         <div id="wheel-result-badge" style="padding:.8rem 1rem;border-radius:10px;text-align:center">
@@ -284,11 +230,10 @@
         </div>
       </div>
 
-      <!-- Category picker -->
       <div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">
           <div class="col-title" style="margin:0">Categories</div>
-          <button class="btn btn-ghost btn-sm" style="font-size:.65rem;padding:.2rem .5rem" onclick="clearCatAnswers()" title="Clear custom answer selections">Clear picks</button>
+          <button class="btn btn-ghost btn-sm" style="font-size:.65rem;padding:.2rem .5rem" onclick="clearCatAnswers()">Clear picks</button>
         </div>
         <input type="text" id="cat-search" class="input" placeholder="Search categories…" style="font-size:.75rem;padding:.3rem .6rem;margin-bottom:.35rem" oninput="filterCats(this.value)">
         <div id="cat-list" style="display:flex;flex-direction:column;gap:2px;max-height:190px;overflow-y:auto;margin-bottom:.45rem"></div>
@@ -299,9 +244,7 @@
       </div>
     </div>
 
-    <!-- CENTER: Active game area -->
     <div class="col">
-      <!-- Lobby: contestant setup -->
       <div id="center-setup">
         <div class="col-title">Player Setup</div>
         <p class="text-muted" style="font-size:.8rem;margin-bottom:.85rem">Enter names or have contestants join at <strong>/play</strong>.</p>
@@ -317,23 +260,17 @@
         <button class="btn btn-primary btn-block mt-3" onclick="setPlayers()">Lock In Players</button>
       </div>
 
-      <!-- Active question area -->
       <div id="center-active" class="hidden">
         <div class="col-title">Current Question</div>
         <div id="active-q-text" class="question-text" style="font-size:1.1rem"></div>
         <hr class="divider">
-
-        <!-- Prediction grid -->
         <div id="pred-section" class="hidden">
           <div class="col-title">Contestant Predictions <span class="text-muted" style="font-weight:400;font-style:italic;font-size:.7rem">(click to override)</span></div>
           <div style="overflow-x:auto">
             <table class="pred-grid" id="pred-table"></table>
           </div>
         </div>
-
         <hr class="divider" id="pred-divider" style="display:none">
-
-        <!-- Live vote bars -->
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
             <div class="col-title" style="margin:0">Live Votes</div>
@@ -344,25 +281,20 @@
       </div>
     </div>
 
-    <!-- RIGHT: Controls + Scores -->
     <div class="col" style="display:flex;flex-direction:column;gap:1rem">
-
-      <!-- Controls -->
       <div>
         <div class="col-title">Controls</div>
         <div id="host-modifier-banner" class="hidden modifier-banner" style="margin-bottom:.65rem"></div>
-
         <div id="ctrl-voting" class="hidden">
-          <button class="btn btn-amber ctrl-btn" onclick="socket.emit('host:close')">Close Voting <kbd style="font-size:.6rem;background:rgba(0,0,0,.3);padding:.08rem .3rem;border-radius:3px;margin-left:.3rem">C</kbd></button>
-          <button id="btn-second-chance" class="btn btn-ghost ctrl-btn hidden" onclick="socket.emit('host:open-second-chance')">↩ Second Chance</button>
+          <button class="btn btn-amber ctrl-btn" onclick="doClose()">Close Voting <kbd style="font-size:.6rem;background:rgba(0,0,0,.3);padding:.08rem .3rem;border-radius:3px;margin-left:.3rem">C</kbd></button>
+          <button id="btn-second-chance" class="btn btn-ghost ctrl-btn hidden" onclick="doOpenSecondChance()">↩ Second Chance</button>
         </div>
         <div id="ctrl-closed" class="hidden">
-          <button class="btn btn-green ctrl-btn btn-lg" onclick="socket.emit('host:reveal')">Reveal Results <kbd style="font-size:.6rem;background:rgba(0,0,0,.3);padding:.08rem .3rem;border-radius:3px;margin-left:.3rem">R</kbd></button>
+          <button class="btn btn-green ctrl-btn btn-lg" onclick="doReveal()">Reveal Results <kbd style="font-size:.6rem;background:rgba(0,0,0,.3);padding:.08rem .3rem;border-radius:3px;margin-left:.3rem">R</kbd></button>
         </div>
         <div id="ctrl-revealed" class="hidden">
-          <button class="btn btn-primary ctrl-btn" onclick="socket.emit('host:next-round')">Next Round <kbd style="font-size:.6rem;background:rgba(0,0,0,.3);padding:.08rem .3rem;border-radius:3px;margin-left:.3rem">N</kbd></button>
+          <button class="btn btn-primary ctrl-btn" onclick="doNextRound()">Next Round <kbd style="font-size:.6rem;background:rgba(0,0,0,.3);padding:.08rem .3rem;border-radius:3px;margin-left:.3rem">N</kbd></button>
         </div>
-
         <div style="margin-top:.65rem;padding:.5rem .65rem;background:var(--bg2);border-radius:8px;font-size:.63rem;color:var(--muted);line-height:1.7">
           <strong style="color:var(--text)">Keys:</strong>
           <kbd style="background:var(--card);padding:.03rem .28rem;border-radius:3px;border:1px solid var(--border)">Space</kbd> Spin &nbsp;
@@ -372,7 +304,6 @@
         </div>
       </div>
 
-      <!-- Scores -->
       <div>
         <div class="col-title">Scores</div>
         <div style="display:flex;align-items:center;gap:.25rem;flex-wrap:wrap;margin-bottom:.5rem">
@@ -386,102 +317,555 @@
         <div class="leaderboard" id="lb-list"></div>
         <p id="no-players" class="text-muted" style="font-size:.76rem">Set players in the center panel.</p>
       </div>
-
     </div>
   </div>
 
   <script src="wheel-segments.js"></script>
   <script src="sounds.js"></script>
   <script src="wheel.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const socket = io({ query: { role: 'host' } });
-    let state = {}, wheel, activeCat = null;
+  <script src="questions-data.js"></script>
 
-    // Event delegation for award-points ±  buttons in the leaderboard
-    document.addEventListener('click', e => {
-      const btn = e.target.closest('.lb-pts-btn');
-      if (!btn) return;
-      socket.emit('host:award-points', { name: btn.dataset.name, points: parseInt(btn.dataset.dir) * ptAmt });
-    });
-    let qBank = {}, allCatKeys = [], categoriesList = [];
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+  <script>
+    // ── FIREBASE INIT ────────────────────────────────────────────────────────
+    const firebaseConfig = {
+      apiKey: "AIzaSyCmreMjOBtmFa9sy7c-CARsnCGBy2OUETk",
+      authDomain: "thegameshow.firebaseapp.com",
+      databaseURL: "https://thegameshow-default-rtdb.firebaseio.com",
+      projectId: "thegameshow",
+      storageBucket: "thegameshow.firebasestorage.app",
+      messagingSenderId: "561633423119",
+      appId: "1:561633423119:web:c0480a7e4502d4256a587a"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db   = firebase.database();
+    const auth = firebase.auth();
+
+    const OWNER_EMAIL   = 'vipercolors@gmail.com';
+    // ↓ Set these after creating products in the Stripe dashboard
+    const RENDER_API    = 'https://the-game-show.onrender.com';
+    const PRICE_MONTHLY = (typeof STRIPE_PRICE_MONTHLY !== 'undefined') ? STRIPE_PRICE_MONTHLY : 'price_MONTHLY';
+    const PRICE_YEARLY  = (typeof STRIPE_PRICE_YEARLY  !== 'undefined') ? STRIPE_PRICE_YEARLY  : 'price_YEARLY';
+
+    const stripeSuccess = new URLSearchParams(location.search).get('stripe') === 'success';
+    let stripeRetries   = 0;
+
+    function gatePanel(id) {
+      ['gate-login','gate-subscribe','gate-loading'].forEach(p => {
+        const el = document.getElementById(p);
+        el.style.display = (p === id) ? 'flex' : 'none';
+      });
+    }
+
+    async function checkSubscription(user) {
+      const gate = document.getElementById('auth-gate');
+      if (!user) { gate.style.display = 'flex'; gatePanel('gate-login'); return; }
+      if (user.email === OWNER_EMAIL) { gate.style.display = 'none'; return; }
+      gate.style.display = 'flex';
+      gatePanel('gate-loading');
+      const snap = await db.ref(`users/${user.uid}/subscription`).once('value');
+      const sub  = snap.val();
+      if (sub && sub.status === 'active' && sub.currentPeriodEnd > Date.now() / 1000) {
+        gate.style.display = 'none';
+        if (stripeSuccess) history.replaceState({}, '', '/host');
+      } else if (stripeSuccess && stripeRetries < 5) {
+        stripeRetries++;
+        document.getElementById('gate-loading').textContent = 'Activating your membership…';
+        setTimeout(() => checkSubscription(auth.currentUser), 2500);
+      } else {
+        document.getElementById('gate-user-email').textContent = user.email || '';
+        gatePanel('gate-subscribe');
+      }
+    }
+
+    auth.onAuthStateChanged(checkSubscription);
+
+    function signInWithGoogle() {
+      document.getElementById('auth-error').style.display = 'none';
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).catch(err => {
+        if (err.code !== 'auth/popup-closed-by-user') {
+          const el = document.getElementById('auth-error');
+          el.textContent = 'Sign-in failed — try again.';
+          el.style.display = '';
+        }
+      });
+    }
+
+    async function loginWithEmail() {
+      const email = document.getElementById('gate-email').value.trim();
+      const pass  = document.getElementById('gate-pass').value;
+      const err   = document.getElementById('auth-error');
+      err.style.display = 'none';
+      const errMap = {
+        'auth/user-not-found':     'No account with that email.',
+        'auth/wrong-password':     'Incorrect password.',
+        'auth/invalid-email':      'Invalid email address.',
+        'auth/invalid-credential': 'Email or password incorrect.',
+        'auth/too-many-requests':  'Too many attempts — try again later.',
+      };
+      try {
+        await auth.signInWithEmailAndPassword(email, pass);
+      } catch (e) {
+        err.textContent = errMap[e.code] || 'Sign-in failed — try again.';
+        err.style.display = '';
+      }
+    }
+
+    async function startCheckout(priceId, btn) {
+      const err = document.getElementById('auth-error');
+      err.style.display = 'none';
+      btn.disabled = true;
+      const orig = btn.innerHTML;
+      btn.innerHTML = 'Loading…';
+      try {
+        const token = await auth.currentUser.getIdToken(true);
+        const res   = await fetch(`${RENDER_API}/api/stripe/checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ priceId }),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        window.location.href = data.url;
+      } catch (e) {
+        err.textContent = e.message || 'Something went wrong.';
+        err.style.display = '';
+        btn.disabled = false;
+        btn.innerHTML = orig;
+      }
+    }
+
+    function signOut() { auth.signOut(); }
+
+    const gameRef    = db.ref('game');
+    const votesRef   = db.ref('votes');
+    const predsRef   = db.ref('predictions');
+    const riskRef    = db.ref('riskItPlayers');
+    const presetsRef = db.ref('presets');
+    const historyRef = db.ref('history');
+
+    // ── GAME LOGIC (from server.js) ──────────────────────────────────────────
+    const CAT_COLORS = ['#7c3aed','#6366f1','#2563eb','#0891b2','#059669','#65a30d','#db2777','#e11d48','#0d9488','#ca8a04','#d97706','#0284c7','#9333ea','#dc2626','#be185d'];
+
+    const ALL_CATEGORIES = Object.keys(window.QUESTIONS || {}).map((id, i) => ({
+      id, label: window.QUESTIONS[id].label, type: 'category', color: CAT_COLORS[i % CAT_COLORS.length]
+    }));
+
+    const MODIFIER_SEGMENTS = [
+      { id:'double',       label:'DOUBLE POINTS',   type:'modifier', color:'#fbbf24' },
+      { id:'triple',       label:'TRIPLE POINTS',   type:'modifier', color:'#fb923c' },
+      { id:'riskIt',       label:'RISK IT!',         type:'modifier', color:'#f43f5e' },
+      { id:'golden',       label:'GOLDEN RECORD',   type:'modifier', color:'#fbbf24' },
+      { id:'underdog',     label:'UNDERDOG BONUS',  type:'modifier', color:'#4ade80' },
+      { id:'double',       label:'DOUBLE POINTS',   type:'modifier', color:'#fbbf24' },
+      { id:'jackpot',      label:'AUDIENCE JACKPOT',type:'modifier', color:'#a855f7' },
+      { id:'secondChance', label:'SECOND CHANCE',   type:'modifier', color:'#a78bfa' },
+      { id:'triple',       label:'TRIPLE POINTS',   type:'modifier', color:'#fb923c' },
+      { id:'bankrupt',     label:'BANKRUPT!',        type:'modifier', color:'#f43f5e' },
+      { id:'platinum',     label:'PLATINUM RECORD', type:'modifier', color:'#94a3b8' },
+      { id:'double',       label:'DOUBLE POINTS',   type:'modifier', color:'#fbbf24' },
+    ];
+
+    function generateWheelSegments(categoryIds) {
+      const source = categoryIds
+        ? categoryIds.map(id => ALL_CATEGORIES.find(c => c.id === id)).filter(Boolean)
+        : [...ALL_CATEGORIES];
+      const cats = [...source];
+      for (let i = cats.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cats[i], cats[j]] = [cats[j], cats[i]];
+      }
+      const result = [...cats];
+      const mods = MODIFIER_SEGMENTS.slice(0, Math.min(MODIFIER_SEGMENTS.length, Math.max(2, Math.floor(cats.length / 4))));
+      const step = Math.floor(cats.length / mods.length);
+      mods.forEach((mod, i) => {
+        const base = i * step;
+        const pos  = base + Math.floor(Math.random() * Math.max(1, step));
+        result.splice(Math.min(pos + i, result.length), 0, mod);
+      });
+      return result;
+    }
+
+    function freshGame(contestants = {}, round = 0, code = null, timerDuration = 60, answerCount = 4, maxRounds = 0, spinsPerGame = 0) {
+      return {
+        phase: 'lobby', round, code, timerDuration, timerStart: null, answerCount,
+        maxRounds, spinsPerGame, spinsUsed: 0, qrHidden: false, wordmarkHidden: false,
+        activePreset: null, question: null, contestants, results: null, modifier: null,
+        scoreMultiplier: 1, secondChanceOpen: false,
+        wheelSegmentIndex: null, wheelSegment: null,
+        wheelSegments: generateWheelSegments(),
+      };
+    }
+
+    function calcResults(votes, question) {
+      const total = Object.values(votes || {}).reduce((a, b) => a + b, 0);
+      const res = {};
+      (question.options || []).forEach(opt => {
+        const count = (votes || {})[opt] || 0;
+        const pct   = total > 0 ? Math.round((count / total) * 100) : 0;
+        res[opt] = { count, pct, points: pct };
+      });
+      return res;
+    }
+
+    function genId() { return Math.random().toString(36).slice(2, 9); }
+    function genCode() { return Math.floor(1000 + Math.random() * 9000).toString(); }
+
+    // ── LOCAL GAME STATE ─────────────────────────────────────────────────────
+    let game = freshGame();
+    let liveVotes = {};     // from Firebase /votes
+    let livePreds = {};     // from Firebase /predictions
+    let liveRiskIt = {};    // from Firebase /riskItPlayers
+    let presetsLocal = [];
+    let wheel, activeCat = null;
+    let allCatKeys = [], categoriesList = [];
     let playerCount = 5, ptAmt = 5;
     let builderAnsCount = 4, builderMaxRounds = 0, builderSpins = 0;
-    let presets = [];
     let perCatCount = false;
     let prevPhase = null;
     let wheelSegFP = '';
+    const catAnswerMap = {};
+    let apCat = null;
+    const builderChecked = new Set();
+    const OPT_COLORS = ['#8b5cf6','#ec4899','#22d3ee','#4ade80','#f97316','#a855f7','#14b8a6','#eab308'];
 
     function esc(s) {
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
-    // Per-category answer overrides: { catId: string[] } — custom answer selections
-    const catAnswerMap = {};
-    // Currently viewed category in answer picker
-    let apCat = null;
-    // Tracks checked category IDs across builder grid rebuilds (survives filter)
-    const builderChecked = new Set();
+    // ── WRITE GAME STATE TO FIREBASE ─────────────────────────────────────────
+    function pushGame() {
+      // Firebase can't store Sets or undefined values — sanitize
+      const g = JSON.parse(JSON.stringify(game));
+      gameRef.set(g);
+    }
 
-    const OPT_COLORS = ['#8b5cf6','#ec4899','#22d3ee','#4ade80','#f97316','#a855f7','#14b8a6','#eab308'];
+    // ── FIREBASE LISTENERS ───────────────────────────────────────────────────
+    votesRef.on('value', snap => {
+      const raw = snap.val() || {};
+      // raw is { voterId: 'optionName' } — count by option
+      liveVotes = {};
+      Object.values(raw).forEach(opt => { liveVotes[opt] = (liveVotes[opt] || 0) + 1; });
+      game.votes = liveVotes;
+      renderVoteBars();
+      const total = Object.keys(raw).length;
+      document.getElementById('vote-total').textContent = `${total} votes`;
+    });
 
-    // ── INIT ──────────────────────────────────────────────────────────────
+    predsRef.on('value', snap => {
+      livePreds = snap.val() || {};
+      game.predictions = livePreds;
+      renderPredGrid();
+    });
+
+    riskRef.on('value', snap => {
+      liveRiskIt = snap.val() || {};
+    });
+
+    presetsRef.on('value', snap => {
+      const data = snap.val();
+      presetsLocal = data ? Object.entries(data).map(([id, v]) => ({ id, ...v })) : [];
+      presetsLocal.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+      renderPresets();
+    });
+
+    // Listen to our own pushed game state (ensures UI stays in sync with Firebase)
+    gameRef.on('value', snap => {
+      const remote = snap.val();
+      if (!remote) return;
+      game = remote;
+      if (!game.votes) game.votes = {};
+      if (!game.predictions) game.predictions = livePreds;
+      render();
+    });
+
+    // ── HOST ACTIONS ─────────────────────────────────────────────────────────
+    function genCode() {
+      game.code = (Math.floor(1000 + Math.random() * 9000)).toString();
+      db.ref('authorizedVoters').remove();
+      pushGame();
+    }
+
+    function setPlayers() {
+      const names = [...document.querySelectorAll('.player-input')].map(i => i.value.trim()).filter(Boolean);
+      if (!names.length) { alert('Enter at least one player name'); return; }
+      const old = game.contestants || {};
+      game.contestants = {};
+      names.forEach(name => {
+        const n = name.trim().slice(0, 24);
+        game.contestants[n] = old[n] || { name: n, score: 0, streak: 0 };
+      });
+      pushGame();
+    }
+
+    function setAnswerCount(n) {
+      game.answerCount = Math.max(4, Math.min(8, parseInt(n) || 4));
+      syncAnsCountBtns(game.answerCount, 'ans-count-btns');
+      if (activeCat) renderQStartArea(activeCat);
+      pushGame();
+    }
+
+    function toggleQR() {
+      game.qrHidden = !game.qrHidden;
+      pushGame();
+    }
+
+    function toggleWordmark() {
+      game.wordmarkHidden = !game.wordmarkHidden;
+      pushGame();
+    }
+
+    function setTimer(sec) {
+      game.timerDuration = parseInt(sec) || 0;
+      syncTimerBtns(game.timerDuration);
+      pushGame();
+    }
+
+    function doSpin() {
+      if (['spinning','voting','closed'].includes(game.phase)) return;
+      if (game.spinsPerGame > 0 && (game.spinsUsed || 0) >= game.spinsPerGame) return;
+      document.getElementById('spin-btn').disabled = true;
+      game.spinsUsed = (game.spinsUsed || 0) + 1;
+      if (game.wheelSegmentIndex !== null) {
+        game.wheelSegments = game.wheelSegments.filter((_, i) => i !== game.wheelSegmentIndex);
+        if (game.wheelSegments.length === 0) {
+          game.wheelSegments = generateWheelSegments(game.activePreset?.categories || null);
+        }
+      }
+      const idx = Math.floor(Math.random() * game.wheelSegments.length);
+      game.wheelSegmentIndex = idx;
+      game.wheelSegment = game.wheelSegments[idx];
+      game.phase = 'spinning';
+      pushGame();
+      // Wheel animation runs locally; after done, call doSpun
+      wheel.spin(idx, 4000, () => doSpun());
+    }
+
+    function doSpun() {
+      if (game.phase !== 'spinning') return;
+      game.phase = 'wheel-result';
+      const seg = game.wheelSegment;
+      if (seg?.type === 'modifier') {
+        game.modifier = seg.id;
+        if (seg.id === 'double')       game.scoreMultiplier = 2;
+        else if (seg.id === 'triple')  game.scoreMultiplier = 3;
+        else if (seg.id === 'riskIt')  {}
+        else if (seg.id === 'secondChance') game.secondChanceOpen = false;
+        else if (seg.id === 'golden' || seg.id === 'platinum') {
+          const bonus = seg.id === 'golden' ? 50 : 100;
+          Object.values(game.contestants || {}).forEach(c => { c.score += bonus; });
+          const deltas = Object.fromEntries(Object.keys(game.contestants || {}).map(k => [k, bonus]));
+          db.ref('scoreDeltas').set(deltas);
+          game.modifier = null; game.scoreMultiplier = 1;
+        }
+      } else {
+        game.modifier = null; game.scoreMultiplier = 1;
+      }
+      pushGame();
+    }
+
+    function startSelected() {
+      if (!activeCat) return;
+      if (!['lobby','wheel-result','revealed'].includes(game.phase)) return;
+      const q = window.QUESTIONS[activeCat];
+      if (!q) return;
+      const count = Math.min(game.answerCount || 4, 8);
+      const custom = catAnswerMap[activeCat];
+      const pool = custom?.length >= 2 ? custom.filter(a => q.answers.includes(a)) : [...q.answers];
+      let options;
+      if (perCatCount) {
+        options = pool;
+      } else {
+        const shuffled = [...pool].sort(() => Math.random() - 0.5);
+        options = shuffled.slice(0, Math.min(count, pool.length));
+      }
+      if (activeCat === 'hotSauce') {
+        const egg = "I don't like hot sauce";
+        if (!options.includes(egg) && q.answers.includes(egg)) {
+          if (options.length >= 8) options[options.length - 1] = egg;
+          else options.push(egg);
+        }
+      }
+      game.question = { text: q.question, options, category: activeCat };
+      game.phase = 'voting';
+      game.round = (game.round || 0) + 1;
+      game.timerStart = game.timerDuration > 0 ? Date.now() : null;
+      game.results = null;
+      game.secondChanceOpen = false;
+      if (game.wheelSegmentIndex !== null) {
+        game.wheelSegments = game.wheelSegments.filter((_, i) => i !== game.wheelSegmentIndex);
+        if (game.wheelSegments.length === 0) {
+          game.wheelSegments = generateWheelSegments(game.activePreset?.categories || null);
+        }
+        game.wheelSegmentIndex = null;
+        game.wheelSegment = null;
+      }
+      // Clear Firebase votes and predictions for new round
+      votesRef.remove();
+      predsRef.remove();
+      riskRef.remove();
+      liveVotes = {}; livePreds = {}; liveRiskIt = {};
+      game.votes = {}; game.predictions = {};
+      pushGame();
+    }
+
+    function doClose() {
+      if (game.phase !== 'voting') return;
+      game.phase = 'closed';
+      pushGame();
+    }
+
+    function doReveal() {
+      if (game.phase !== 'closed') return;
+      const prevScores = Object.fromEntries(Object.entries(game.contestants || {}).map(([k, v]) => [k, v.score]));
+      game.phase = 'revealed';
+      game.results = calcResults(liveVotes, game.question);
+      const maxPct = Math.max(...Object.values(game.results).map(r => r.pct), 0);
+      const winnerOption = maxPct > 0 ? (game.question?.options.find(o => game.results[o]?.pct === maxPct) || null) : null;
+      const totalVoters = Object.keys(liveVotes).reduce((a, b) => a + b, 0);
+
+      if (game.modifier !== 'bankrupt') {
+        Object.entries(livePreds).forEach(([name, option]) => {
+          const c = (game.contestants || {})[name];
+          if (!c || !game.results[option]) return;
+          let pts = game.results[option].points * (game.scoreMultiplier || 1);
+          if (option === winnerOption) pts += Math.min(c.streak || 0, 5) * 10;
+          if (game.modifier === 'riskIt' && liveRiskIt[name]) {
+            pts = option === winnerOption ? pts * 2 : 0;
+          }
+          c.score += Math.round(pts);
+        });
+
+        if (game.modifier === 'underdog') {
+          const minPct = Math.min(...Object.values(game.results).map(r => r.pct));
+          const underdogOpt = game.question.options.find(o => game.results[o]?.pct === minPct);
+          if (underdogOpt) {
+            Object.entries(livePreds).forEach(([name, opt]) => {
+              if (opt === underdogOpt && (game.contestants || {})[name]) game.contestants[name].score += 20;
+            });
+          }
+        }
+
+        if (game.modifier === 'jackpot' && winnerOption) {
+          const total = Object.values(liveVotes).reduce((a, b) => a + b, 0);
+          const bonus = Math.max(5, Math.floor(total * 0.1));
+          Object.entries(livePreds).forEach(([name, opt]) => {
+            if (opt === winnerOption && (game.contestants || {})[name]) game.contestants[name].score += bonus;
+          });
+        }
+      }
+
+      Object.values(game.contestants || {}).forEach(c => {
+        const pred = livePreds[c.name];
+        c.streak = pred === winnerOption ? (c.streak || 0) + 1 : 0;
+      });
+
+      const deltas = Object.fromEntries(Object.entries(game.contestants || {}).map(([k, v]) => [k, v.score - (prevScores[k] || 0)]));
+      db.ref('scoreDeltas').set(deltas);
+      game.predictions = livePreds;
+      pushGame();
+    }
+
+    function doNextRound() {
+      if (game.phase !== 'revealed') return;
+      const saved = { ...game.contestants };
+      const round = game.round;
+      const code = game.code;
+      const timer = game.timerDuration;
+      const ansCount = game.answerCount;
+      const preset = game.activePreset;
+      const wheelSegs = game.wheelSegments;
+      const maxRounds = game.maxRounds;
+      const spinsPerGame = game.spinsPerGame;
+      const spinsUsed = game.spinsUsed;
+      const qrHidden = game.qrHidden;
+      const wordmarkHidden = game.wordmarkHidden;
+      game = freshGame(saved, round, code, timer, ansCount, maxRounds, spinsPerGame);
+      game.wheelSegments = wheelSegs;
+      game.activePreset = preset;
+      game.spinsUsed = spinsUsed;
+      game.qrHidden = qrHidden;
+      game.wordmarkHidden = wordmarkHidden;
+      votesRef.remove(); predsRef.remove(); riskRef.remove();
+      liveVotes = {}; livePreds = {}; liveRiskIt = {};
+      pushGame();
+    }
+
+    function awardPoints(name, pts) {
+      const c = (game.contestants || {})[name];
+      if (!c) return;
+      c.score = Math.max(0, c.score + pts);
+      pushGame();
+    }
+
+    function doReset() {
+      if (Object.keys(game.contestants || {}).length > 0 && game.round > 0) {
+        const { ...snapshot } = game;
+        delete snapshot.authorizedVoters;
+        historyRef.push({ ...snapshot, savedAt: new Date().toISOString() });
+      }
+      game = freshGame();
+      votesRef.remove(); predsRef.remove(); riskRef.remove();
+      db.ref('authorizedVoters').remove();
+      liveVotes = {}; livePreds = {}; liveRiskIt = {};
+      pushGame();
+    }
+
+    function doOpenSecondChance() {
+      if (game.modifier !== 'secondChance') return;
+      game.secondChanceOpen = true;
+      pushGame();
+    }
+
+    function setPredOverride(name, option) {
+      if (livePreds[name] === option) {
+        predsRef.child(name).remove();
+      } else {
+        predsRef.child(name).set(option);
+      }
+    }
+
+    // ── INIT ─────────────────────────────────────────────────────────────────
     window.addEventListener('load', () => {
       const canvas = document.getElementById('wheel-canvas');
       wheel = makeWheel(canvas); wheel.init();
       buildPlayerInputs();
+      allCatKeys = Object.keys(window.QUESTIONS || {}).sort((a, b) => {
+        const la = window.CATEGORY_LABELS?.[a] || a;
+        const lb = window.CATEGORY_LABELS?.[b] || b;
+        return la.localeCompare(lb);
+      });
+      categoriesList = ALL_CATEGORIES.sort((a, b) => a.label.localeCompare(b.label));
+      renderCatList(allCatKeys);
+      buildBuilderGrid();
 
-      const voteUrl = `${location.protocol}//${location.hostname}${location.port?':'+location.port:''}/vote`;
+      const voteUrl = `${location.protocol}//${location.hostname}${location.port ? ':'+location.port : ''}/vote`;
       QRCode.toCanvas(document.getElementById('host-qr'), voteUrl, { width:128, margin:1, color:{dark:'#09090b',light:'#fafafa'} });
     });
 
-    // ── SOCKET ────────────────────────────────────────────────────────────
-    socket.on('question-bank', qb => {
-      qBank = qb || {};
-      const keys = Object.keys(qBank);
-      if (keys.length && !allCatKeys.length) {
-        allCatKeys = keys.sort((a,b) => {
-          const la = window.CATEGORY_LABELS?.[a] || a;
-          const lb = window.CATEGORY_LABELS?.[b] || b;
-          return la.localeCompare(lb);
-        });
-        renderCatList(allCatKeys);
-      }
+    document.addEventListener('click', e => {
+      const btn = e.target.closest('.lb-pts-btn');
+      if (!btn) return;
+      awardPoints(btn.dataset.name, parseInt(btn.dataset.dir) * ptAmt);
     });
 
-    socket.on('categories-list', list => { categoriesList = list || []; buildBuilderGrid(); });
-    socket.on('presets-update', ps => { presets = ps || []; renderPresets(); });
-
-    socket.on('state', s => {
-      state = s;
-      if (s.wheelSegments?.length) {
-        const fp = s.wheelSegments.length + ':' + (s.wheelSegments[0]?.id || '');
-        if (fp !== wheelSegFP) {
-          wheelSegFP = fp;
-          window.WHEEL = s.wheelSegments;
-          if (wheel && !wheel.isAnimating()) wheel.redraw();
-        }
-      }
-      if (s.answerCount) syncAnsCountBtns(s.answerCount, 'ans-count-btns');
-      if (s.timerDuration !== undefined) syncTimerBtns(s.timerDuration);
-      // Keep builder variables in sync so reopening the modal reflects server state
-      if (s.maxRounds !== undefined) builderMaxRounds = s.maxRounds;
-      if (s.spinsPerGame !== undefined) builderSpins = s.spinsPerGame;
-      if (s.answerCount) builderAnsCount = s.answerCount;
-      render();
+    document.addEventListener('keydown', e => {
+      if (e.target.matches('input,textarea,select')) return;
+      const { phase } = game;
+      if (e.code === 'Space') { e.preventDefault(); if (!document.getElementById('spin-btn').disabled) doSpin(); }
+      else if (e.key === 'c'||e.key === 'C') { if (phase==='voting') doClose(); }
+      else if (e.key === 'r'||e.key === 'R') { if (phase==='closed') doReveal(); }
+      else if (e.key === 'n'||e.key === 'N') { if (phase==='revealed') doNextRound(); }
     });
 
-    socket.on('vote-tick', ({ votes, total }) => {
-      state.votes = votes; state.voterCount = total;
-      renderVoteBars();
-      document.getElementById('vote-total').textContent = `${total} votes`;
-    });
-
-    socket.on('predictions-update', ps => { state.predictions = ps; renderPredGrid(); });
-
-    // ── MAIN RENDER ───────────────────────────────────────────────────────
+    // ── RENDER ───────────────────────────────────────────────────────────────
     function render() {
-      const { phase, question, contestants, wheelSegmentIndex, wheelSegment, code, modifier, scoreMultiplier, secondChanceOpen, activePreset, spinsPerGame, spinsUsed, maxRounds, qrHidden, wordmarkHidden } = state;
+      const { phase, question, contestants, wheelSegmentIndex, wheelSegment, code, modifier, scoreMultiplier, secondChanceOpen, activePreset, spinsPerGame, spinsUsed, maxRounds, qrHidden, wordmarkHidden } = game;
 
       const pb = document.getElementById('phase-badge');
       const labels = { lobby:'Lobby', spinning:'Spinning', 'wheel-result':'Landed', voting:'Voting', closed:'Closed', revealed:'Revealed' };
@@ -491,7 +875,6 @@
       document.getElementById('code-display').textContent = code || '----';
       renderRoundTracker();
 
-      // Spin button + spins remaining
       const spinDisabled = ['spinning','voting','closed'].includes(phase) || (spinsPerGame > 0 && (spinsUsed || 0) >= spinsPerGame);
       document.getElementById('spin-btn').disabled = spinDisabled;
       const spinsEl = document.getElementById('spins-left');
@@ -500,14 +883,18 @@
         spinsEl.textContent = `${left} spin${left !== 1 ? 's' : ''} left`;
       } else spinsEl.textContent = '';
 
-      // QR toggle button state
       const qrBtn = document.getElementById('qr-toggle-btn');
       if (qrBtn) { qrBtn.textContent = qrHidden ? 'Show QR' : 'Hide QR'; qrBtn.style.opacity = qrHidden ? '.55' : '1'; }
       const wmBtn = document.getElementById('wordmark-toggle-btn');
       if (wmBtn) { wmBtn.textContent = wordmarkHidden ? 'Show Title' : 'Hide Title'; wmBtn.style.opacity = wordmarkHidden ? '.55' : '1'; }
 
-      if (phase === 'spinning' && wheelSegmentIndex != null && prevPhase !== 'spinning') {
-        wheel.spin(wheelSegmentIndex, 4000, () => socket.emit('host:spun'));
+      if (game.wheelSegments?.length) {
+        const fp = game.wheelSegments.length + ':' + (game.wheelSegments[0]?.id || '');
+        if (fp !== wheelSegFP) {
+          wheelSegFP = fp;
+          window.WHEEL = game.wheelSegments;
+          if (wheel && !wheel.isAnimating()) wheel.redraw();
+        }
       }
 
       const showWheelRes = wheelSegment && ['wheel-result','voting','closed','revealed'].includes(phase);
@@ -515,12 +902,17 @@
       if (showWheelRes) renderWheelResult(wheelSegment);
 
       if (phase === 'wheel-result' && wheelSegment?.type === 'category') {
-        if (wheelSegment.id !== activeCat) selectCat(wheelSegment.id); // selectCat calls renderQStartArea
+        if (wheelSegment.id !== activeCat) selectCat(wheelSegment.id);
         else renderQStartArea(activeCat);
       } else if (!activeCat && allCatKeys.length) selectCat(allCatKeys[0]);
       else if (activeCat) renderQStartArea(activeCat);
 
-      // Active preset badge
+      if (game.answerCount) syncAnsCountBtns(game.answerCount, 'ans-count-btns');
+      if (game.timerDuration !== undefined) syncTimerBtns(game.timerDuration);
+      if (maxRounds !== undefined) builderMaxRounds = maxRounds;
+      if (spinsPerGame !== undefined) builderSpins = spinsPerGame;
+      if (game.answerCount) builderAnsCount = game.answerCount;
+
       const presetBadge = document.getElementById('active-preset-badge');
       if (activePreset?.name) { presetBadge.classList.remove('hidden'); presetBadge.textContent = activePreset.name; }
       else presetBadge.classList.add('hidden');
@@ -532,10 +924,8 @@
       if (hasQ) {
         document.getElementById('active-q-text').textContent = question.text;
         renderVoteBars(); renderPredGrid();
-        document.getElementById('vote-total').textContent = `${state.voterCount || 0} votes`;
       }
 
-      // Modifier banner
       const modBanner = document.getElementById('host-modifier-banner');
       if (modifier) {
         const info = window.MODIFIER_INFO?.[modifier];
@@ -544,7 +934,7 @@
         modBanner.style.borderColor = (info?.color||'#fbbf24') + '45';
         modBanner.style.color = '#fff';
         const multLabel = scoreMultiplier > 1 ? ` (×${scoreMultiplier})` : '';
-        modBanner.innerHTML = `<span>${info?.badge||'⚡'}</span> <strong style="color:${info?.color||'#fbbf24'}">${info?.label||modifier}${multLabel}</strong> — ${info?.desc||''}`;
+        modBanner.innerHTML = `<span>${info?.badge||'⚡'}</span> <strong style="color:${info?.color||'#fbbf24'}">${esc(info?.label||modifier)}${multLabel}</strong> — ${info?.desc||''}`;
       } else modBanner.classList.add('hidden');
 
       const sc2btn = document.getElementById('btn-second-chance');
@@ -559,105 +949,8 @@
       prevPhase = phase;
     }
 
-    // ── QR / WORDMARK TOGGLES ─────────────────────────────────────────────
-    function toggleQR() { socket.emit('host:toggle-qr'); }
-    function toggleWordmark() { socket.emit('host:toggle-wordmark'); }
-
-    // ── CATEGORY LIST ─────────────────────────────────────────────────────
-    function filterCats(query) {
-      const q = query.toLowerCase();
-      const filtered = q ? allCatKeys.filter(k => (window.CATEGORY_LABELS?.[k]||k).toLowerCase().includes(q)) : allCatKeys;
-      renderCatList(filtered);
-    }
-
-    function renderCatList(keys) {
-      const hasCustom = k => catAnswerMap[k]?.length > 0;
-      document.getElementById('cat-list').innerHTML = keys.map(k => {
-        const custom = hasCustom(k) ? ` <span style="color:var(--amber);font-size:.6rem" title="Custom answers selected">●</span>` : '';
-        return `<button class="cat-item${activeCat===k?' active':''}" onclick="selectCat('${k}')">${window.CATEGORY_LABELS?.[k]||k}${custom}</button>`;
-      }).join('');
-    }
-
-    function selectCat(cat) {
-      activeCat = cat;
-      const q = (document.getElementById('cat-search')?.value || '').toLowerCase();
-      const filtered = q ? allCatKeys.filter(k => (window.CATEGORY_LABELS?.[k]||k).toLowerCase().includes(q)) : allCatKeys;
-      renderCatList(filtered);
-      renderQStartArea(cat);
-    }
-
-    function renderQStartArea(cat) {
-      const q = qBank[cat];
-      const area = document.getElementById('q-start-area');
-      const preview = document.getElementById('active-q-preview');
-      const btn = document.getElementById('start-q-btn');
-      const canStart = ['lobby','wheel-result','revealed'].includes(state.phase);
-
-      if (!q) { area.classList.add('hidden'); return; }
-      area.classList.remove('hidden');
-      const label = window.CATEGORY_LABELS?.[cat] || cat;
-      const count = state.answerCount || 4;
-      const custom = catAnswerMap[cat];
-      let customNote;
-      if (custom?.length) {
-        customNote = perCatCount
-          ? `<span style="color:var(--amber)">All ${custom.length} custom answers</span>`
-          : `<span style="color:var(--amber)">${count} random from ${custom.length} custom picks</span>`;
-      } else {
-        customNote = perCatCount
-          ? `<span style="color:var(--purple-lt)">All answers from pool (${q.answers?.length||'?'})</span>`
-          : `<span style="color:var(--purple-lt)">${count} random from pool of ${q.answers?.length||'?'}</span>`;
-      }
-      preview.innerHTML = `<strong style="color:var(--text)">${label}</strong><br><span style="color:var(--muted)">${q.question}</span><br>${customNote}`;
-      btn.disabled = !canStart;
-      btn.style.opacity = canStart ? '' : '.5';
-    }
-
-    function startSelected() {
-      if (!activeCat) return;
-      if (!['lobby','wheel-result','revealed'].includes(state.phase)) return;
-      const custom = catAnswerMap[activeCat];
-      const selectedAnswers = custom?.length >= 2 ? custom : null;
-      socket.emit('host:start', { category: activeCat, selectedAnswers, useAll: perCatCount });
-    }
-
-    // Clear all per-category answer overrides
-    function clearCatAnswers() {
-      Object.keys(catAnswerMap).forEach(k => delete catAnswerMap[k]);
-      renderCatList(allCatKeys);
-      if (activeCat) renderQStartArea(activeCat);
-    }
-
-    // ── ANSWER COUNT ──────────────────────────────────────────────────────
-    function setAnswerCount(n) {
-      socket.emit('host:set-answer-count', n);
-      syncAnsCountBtns(n, 'ans-count-btns');
-      if (activeCat) renderQStartArea(activeCat);
-    }
-
-    function syncAnsCountBtns(n, containerId) {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-      container.querySelectorAll('.ans-btn').forEach(b => {
-        const active = parseInt(b.dataset.n) === n;
-        b.className = `btn ${active?'btn-primary':'btn-ghost'} btn-sm ans-btn${active?' active':''}`;
-        b.textContent = b.dataset.n;
-      });
-    }
-
-    // ── KEYBOARD ─────────────────────────────────────────────────────────
-    document.addEventListener('keydown', e => {
-      if (e.target.matches('input,textarea,select')) return;
-      const { phase } = state;
-      if (e.code === 'Space') { e.preventDefault(); if (!document.getElementById('spin-btn').disabled) doSpin(); }
-      else if (e.key === 'c'||e.key === 'C') { if (phase==='voting') socket.emit('host:close'); }
-      else if (e.key === 'r'||e.key === 'R') { if (phase==='closed') socket.emit('host:reveal'); }
-      else if (e.key === 'n'||e.key === 'N') { if (phase==='revealed') socket.emit('host:next-round'); }
-    });
-
-    // ── ROUND TRACKER ─────────────────────────────────────────────────────
     function renderRoundTracker() {
-      const { round, maxRounds } = state;
+      const { round, maxRounds } = game;
       const total = maxRounds > 0 ? maxRounds : 8;
       let html = '';
       for (let i = 1; i <= Math.min(total, 12); i++) {
@@ -666,12 +959,6 @@
       }
       if (maxRounds === 0) html += `<div class="round-pip" style="opacity:.35">…</div>`;
       document.getElementById('round-tracker').innerHTML = html;
-    }
-
-    // ── WHEEL ─────────────────────────────────────────────────────────────
-    function doSpin() {
-      document.getElementById('spin-btn').disabled = true;
-      socket.emit('host:spin');
     }
 
     function renderWheelResult(seg) {
@@ -697,13 +984,14 @@
       }
     }
 
-    // ── PREDICTION GRID ───────────────────────────────────────────────────
     function renderPredGrid() {
-      const { predictions, question, contestants, phase } = state;
+      const predictions = livePreds;
+      const question = game.question;
+      const contestants = game.contestants || {};
       const section = document.getElementById('pred-section');
       const divider = document.getElementById('pred-divider');
-      const names   = Object.keys(contestants||{});
-      const canPred = phase === 'voting';
+      const names = Object.keys(contestants);
+      const canPred = game.phase === 'voting';
       if (!question||!names.length) { section.classList.add('hidden'); divider.style.display='none'; return; }
       section.classList.remove('hidden'); divider.style.display='';
       const opts = question.options;
@@ -712,7 +1000,7 @@
         const sel = predictions?.[name];
         const cells = opts.map((opt,i) => {
           const isSel = sel === opt;
-          return `<td><button class="pred-cell ${isSel?'sel-'+i:''}" data-name="${esc(name)}" data-opt="${esc(opt)}" ${canPred?'onclick="setPredFromEl(this)"':' disabled'}>${isSel?'✓':'○'}</button></td>`;
+          return `<td><button class="pred-cell ${isSel?'sel-'+i:''}" data-name="${esc(name)}" data-opt="${esc(opt)}" ${canPred?'onclick="setPredOverride(this.dataset.name,this.dataset.opt)"':' disabled'}>${isSel?'✓':'○'}</button></td>`;
         }).join('');
         return `<tr><td>${esc(name)}</td>${cells}</tr>`;
       }).join('');
@@ -720,16 +1008,15 @@
       document.getElementById('pred-table').innerHTML = html;
     }
 
-    function setPredFromEl(el) { socket.emit('host:set-prediction', { name: el.dataset.name, option: el.dataset.opt }); }
-
-    // ── VOTE BARS ─────────────────────────────────────────────────────────
     function renderVoteBars() {
-      const { votes, question } = state;
+      const votes = liveVotes;
+      const question = game.question;
       if (!question) return;
-      const data  = votes||{};
-      const total = Object.values(data).reduce((a,b)=>a+b,0);
+      const total = Object.values(votes).reduce((a,b)=>a+b,0);
+      const totalVoters = Object.keys(votes).length;
+      document.getElementById('vote-total').textContent = `${totalVoters} votes`;
       document.getElementById('vote-bars').innerHTML = question.options.map((opt,i) => {
-        const count = data[opt]||0;
+        const count = votes[opt]||0;
         const pct   = total>0 ? Math.round(count/total*100) : 0;
         return `<div class="vote-bar">
           <span class="vote-bar-label">${esc(opt.slice(0,22))}</span>
@@ -739,7 +1026,6 @@
       }).join('');
     }
 
-    // ── PLAYERS ───────────────────────────────────────────────────────────
     function buildPlayerInputs() {
       const container = document.getElementById('player-inputs');
       const existing = [...container.querySelectorAll('.player-input')].map(i => i.value);
@@ -754,13 +1040,7 @@
     }
 
     function adjustPlayers(d) { playerCount = Math.max(1, Math.min(12, playerCount+d)); buildPlayerInputs(); }
-    function setPlayers() {
-      const names = [...document.querySelectorAll('.player-input')].map(i=>i.value.trim()).filter(Boolean);
-      if (!names.length) { alert('Enter at least one player name'); return; }
-      socket.emit('host:set-contestants', names);
-    }
 
-    // ── TIMER ─────────────────────────────────────────────────────────────
     function syncTimerBtns(sec) {
       document.querySelectorAll('.timer-opt').forEach(b => {
         const active = parseInt(b.dataset.sec) === sec;
@@ -769,12 +1049,6 @@
       });
     }
 
-    function setTimer(sec) {
-      socket.emit('host:set-timer', sec);
-      syncTimerBtns(sec);
-    }
-
-    // ── LEADERBOARD ───────────────────────────────────────────────────────
     function setAmt(n) {
       ptAmt = n;
       document.querySelectorAll('.pt-amt').forEach(b => {
@@ -784,30 +1058,89 @@
     }
 
     function renderLB() {
-      const { contestants } = state;
+      const contestants = game.contestants || {};
       const list = document.getElementById('lb-list');
       const noP  = document.getElementById('no-players');
-      if (!contestants||!Object.keys(contestants).length) { list.innerHTML=''; noP.classList.remove('hidden'); return; }
+      if (!Object.keys(contestants).length) { list.innerHTML=''; noP.classList.remove('hidden'); return; }
       noP.classList.add('hidden');
       const sorted = Object.values(contestants).sort((a,b)=>b.score-a.score);
       list.innerHTML = sorted.map((c,i) => {
         const streak = c.streak||0;
-        const pred = state.predictions?.[c.name];
+        const pred = livePreds?.[c.name];
         const predTag = pred ? `<span style="font-size:.65rem;color:var(--muted);margin-left:2px">→ ${esc(pred.slice(0,12))}</span>` : '';
         const streakBadge = streak>=2 ? `<span style="font-size:.72rem;color:#fb923c">🔥×${streak}</span>` : '';
         return `<div class="lb-row ${i===0?'top':''}" style="gap:.35rem">
           <span class="lb-rank">${i+1}</span>
           <span class="lb-name">${esc(c.name)}${streakBadge}${predTag}</span>
           <span class="lb-score">${c.score}</span>
-          <button class="btn btn-ghost btn-sm lb-pts-btn" data-name="${esc(c.name)}" data-dir="-1" style="padding:.18rem .5rem;font-size:.85rem;color:var(--red);min-width:26px" title="Deduct points">−</button>
-          <button class="btn btn-ghost btn-sm lb-pts-btn" data-name="${esc(c.name)}" data-dir="1" style="padding:.18rem .5rem;font-size:.85rem;color:var(--green);min-width:26px" title="Award points">+</button>
+          <button class="btn btn-ghost btn-sm lb-pts-btn" data-name="${esc(c.name)}" data-dir="-1" style="padding:.18rem .5rem;font-size:.85rem;color:var(--red);min-width:26px">−</button>
+          <button class="btn btn-ghost btn-sm lb-pts-btn" data-name="${esc(c.name)}" data-dir="1" style="padding:.18rem .5rem;font-size:.85rem;color:var(--green);min-width:26px">+</button>
         </div>`;
       }).join('');
     }
 
-    // ── GAME BUILDER ──────────────────────────────────────────────────────
+    function filterCats(query) {
+      const q = query.toLowerCase();
+      const filtered = q ? allCatKeys.filter(k => (window.CATEGORY_LABELS?.[k]||k).toLowerCase().includes(q)) : allCatKeys;
+      renderCatList(filtered);
+    }
+
+    function renderCatList(keys) {
+      const hasCustom = k => catAnswerMap[k]?.length > 0;
+      document.getElementById('cat-list').innerHTML = keys.map(k => {
+        const custom = hasCustom(k) ? ` <span style="color:var(--amber);font-size:.6rem">●</span>` : '';
+        return `<button class="cat-item${activeCat===k?' active':''}" onclick="selectCat('${k}')">${window.CATEGORY_LABELS?.[k]||k}${custom}</button>`;
+      }).join('');
+    }
+
+    function selectCat(cat) {
+      activeCat = cat;
+      const q = (document.getElementById('cat-search')?.value || '').toLowerCase();
+      const filtered = q ? allCatKeys.filter(k => (window.CATEGORY_LABELS?.[k]||k).toLowerCase().includes(q)) : allCatKeys;
+      renderCatList(filtered);
+      renderQStartArea(cat);
+    }
+
+    function renderQStartArea(cat) {
+      const q = window.QUESTIONS[cat];
+      const area = document.getElementById('q-start-area');
+      const preview = document.getElementById('active-q-preview');
+      const btn = document.getElementById('start-q-btn');
+      const canStart = ['lobby','wheel-result','revealed'].includes(game.phase);
+      if (!q) { area.classList.add('hidden'); return; }
+      area.classList.remove('hidden');
+      const label = window.CATEGORY_LABELS?.[cat] || cat;
+      const count = game.answerCount || 4;
+      const custom = catAnswerMap[cat];
+      let customNote;
+      if (custom?.length) {
+        customNote = perCatCount ? `<span style="color:var(--amber)">All ${custom.length} custom answers</span>` : `<span style="color:var(--amber)">${count} random from ${custom.length} custom picks</span>`;
+      } else {
+        customNote = perCatCount ? `<span style="color:var(--purple-lt)">All answers from pool (${q.answers?.length||'?'})</span>` : `<span style="color:var(--purple-lt)">${count} random from pool of ${q.answers?.length||'?'}</span>`;
+      }
+      preview.innerHTML = `<strong style="color:var(--text)">${label}</strong><br><span style="color:var(--muted)">${q.question}</span><br>${customNote}`;
+      btn.disabled = !canStart;
+      btn.style.opacity = canStart ? '' : '.5';
+    }
+
+    function clearCatAnswers() {
+      Object.keys(catAnswerMap).forEach(k => delete catAnswerMap[k]);
+      renderCatList(allCatKeys);
+      if (activeCat) renderQStartArea(activeCat);
+    }
+
+    function syncAnsCountBtns(n, containerId) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.querySelectorAll('.ans-btn').forEach(b => {
+        const active = parseInt(b.dataset.n) === n;
+        b.className = `btn ${active?'btn-primary':'btn-ghost'} btn-sm ans-btn${active?' active':''}`;
+        b.textContent = b.dataset.n;
+      });
+    }
+
+    // ── BUILDER ──────────────────────────────────────────────────────────────
     function openBuilder() {
-      // Sync builder button UI to current server state before opening
       builderSetAns(builderAnsCount);
       builderSetMaxRounds(builderMaxRounds);
       builderSetSpins(builderSpins);
@@ -835,11 +1168,9 @@
     }
 
     function filterBuilderCats(q) { buildBuilderGrid(q); }
-
     function updateBuilderSelCount() {
       document.getElementById('builder-sel-count').textContent = builderChecked.size === 0 ? '(0 = all)' : `(${builderChecked.size} selected)`;
     }
-
     function builderSelectAll() { categoriesList.forEach(c => builderChecked.add(c.id)); buildBuilderGrid(document.getElementById('builder-cat-search')?.value); }
     function builderClearAll()  { builderChecked.clear(); buildBuilderGrid(document.getElementById('builder-cat-search')?.value); }
 
@@ -850,7 +1181,6 @@
         b.className = `btn ${active?'btn-primary':'btn-ghost'} btn-sm ans-btn${active?' active':''}`;
       });
     }
-
     function builderSetMaxRounds(n) {
       builderMaxRounds = n;
       document.querySelectorAll('[data-mr]').forEach(b => {
@@ -858,7 +1188,6 @@
         b.className = `btn ${active?'btn-primary':'btn-ghost'} btn-sm ans-btn${active?' active':''}`;
       });
     }
-
     function builderSetSpins(n) {
       builderSpins = n;
       document.querySelectorAll('[data-sg]').forEach(b => {
@@ -868,18 +1197,19 @@
     }
 
     function applyBuilderSettings() {
-      socket.emit('host:set-answer-count', builderAnsCount);
-      socket.emit('host:set-max-rounds', builderMaxRounds);
-      socket.emit('host:set-spins-per-game', builderSpins);
-      // Apply selected categories to wheel (empty = use all categories)
-      socket.emit('host:apply-categories', [...builderChecked]);
+      game.answerCount = builderAnsCount;
+      game.maxRounds = builderMaxRounds;
+      game.spinsPerGame = builderSpins;
+      const cats = [...builderChecked];
+      game.wheelSegments = generateWheelSegments(cats.length ? cats : null);
+      game.wheelSegmentIndex = null; game.wheelSegment = null;
       syncAnsCountBtns(builderAnsCount, 'ans-count-btns');
+      pushGame();
     }
 
-    // ── ANSWER PICKER ─────────────────────────────────────────────────────
     function openAnswerPicker(catId) {
       apCat = catId;
-      const q = qBank[catId];
+      const q = window.QUESTIONS[catId];
       if (!q) return;
       const label = window.CATEGORY_LABELS?.[catId] || catId;
       document.getElementById('answer-picker-title').textContent = `${label} (${q.answers.length})`;
@@ -890,7 +1220,7 @@
     }
 
     function renderAnswerPicker(catId, filterQ) {
-      const q = qBank[catId];
+      const q = window.QUESTIONS[catId];
       if (!q) return;
       const panel = document.getElementById('answer-picker-panel');
       const isHotSauce = catId === 'hotSauce';
@@ -914,70 +1244,60 @@
 
     function saveApSelections() {
       if (!apCat) return;
-      const q = qBank[apCat];
+      const q = window.QUESTIONS[apCat];
       const isHotSauce = apCat === 'hotSauce';
       const egg = "I don't like hot sauce";
-      // Determine which answers are currently visible (filtered)
       const fq = document.querySelector('.ap-search')?.value || '';
       const visibleSet = new Set(fq ? q.answers.filter(a => a.toLowerCase().includes(fq.toLowerCase())) : q.answers);
-      const existing = catAnswerMap[apCat]; // undefined = all selected, array = custom subset
+      const existing = catAnswerMap[apCat];
       const allSel = existing === undefined;
       const checkedVisible = new Set([...document.querySelectorAll('.ap-cb:checked:not(:disabled)')].map(cb => cb.value));
-      // Merge: visible items come from DOM, non-visible items keep their prior state
       const finalSelected = q.answers.filter(a => {
         if (isHotSauce && a === egg) return true;
         if (visibleSet.has(a)) return checkedVisible.has(a);
         return allSel ? true : (existing || []).includes(a);
       });
-      if (finalSelected.length === q.answers.length) {
-        delete catAnswerMap[apCat];
-      } else {
-        catAnswerMap[apCat] = finalSelected;
-      }
+      if (finalSelected.length === q.answers.length) delete catAnswerMap[apCat];
+      else catAnswerMap[apCat] = finalSelected;
       renderCatList(allCatKeys);
       if (activeCat === apCat) renderQStartArea(apCat);
     }
 
-    function apAll() {
-      if (!apCat) return;
-      delete catAnswerMap[apCat]; // undefined = all selected
-      renderAnswerPicker(apCat, document.querySelector('.ap-search')?.value || '');
-      renderCatList(allCatKeys);
-      if (activeCat === apCat) renderQStartArea(apCat);
-    }
-    function apNone() {
-      if (!apCat) return;
-      catAnswerMap[apCat] = [];
-      renderAnswerPicker(apCat, document.querySelector('.ap-search')?.value || '');
-      renderCatList(allCatKeys);
-      if (activeCat === apCat) renderQStartArea(apCat);
-    }
+    function apAll()  { if (!apCat) return; delete catAnswerMap[apCat]; renderAnswerPicker(apCat, document.querySelector('.ap-search')?.value || ''); renderCatList(allCatKeys); if (activeCat === apCat) renderQStartArea(apCat); }
+    function apNone() { if (!apCat) return; catAnswerMap[apCat] = []; renderAnswerPicker(apCat, document.querySelector('.ap-search')?.value || ''); renderCatList(allCatKeys); if (activeCat === apCat) renderQStartArea(apCat); }
     function apTopN() {
-      if (!apCat || !qBank[apCat]) return;
-      const n = Math.round(qBank[apCat].answers.length * 0.45);
-      catAnswerMap[apCat] = qBank[apCat].answers.slice(0, n);
+      if (!apCat || !window.QUESTIONS[apCat]) return;
+      const n = Math.round(window.QUESTIONS[apCat].answers.length * 0.45);
+      catAnswerMap[apCat] = window.QUESTIONS[apCat].answers.slice(0, n);
       renderAnswerPicker(apCat, document.querySelector('.ap-search')?.value || '');
       renderCatList(allCatKeys);
       if (activeCat === apCat) renderQStartArea(apCat);
     }
 
-    // ── PRESETS ───────────────────────────────────────────────────────────
+    // ── PRESETS ───────────────────────────────────────────────────────────────
     function savePreset() {
       const name = document.getElementById('preset-name-input').value.trim();
       if (!name) { alert('Enter a preset name'); return; }
       const categories = [...builderChecked];
       const answerMap = {};
       categories.forEach(catId => { if (catAnswerMap[catId]?.length) answerMap[catId] = [...catAnswerMap[catId]]; });
-      socket.emit('host:save-preset', { name, categories, answerCount: builderAnsCount, answerMap });
+      const preset = {
+        name: name.trim().slice(0, 40),
+        categories,
+        answerCount: Math.max(4, Math.min(8, builderAnsCount)),
+        answerMap,
+        createdAt: new Date().toISOString()
+      };
+      presetsRef.push(preset);
       document.getElementById('preset-name-input').value = '';
     }
 
     function renderPresets() {
       const list = document.getElementById('preset-list');
       const noP  = document.getElementById('no-presets');
-      if (!presets.length) { list.innerHTML=''; noP.classList.remove('hidden'); return; }
+      if (!presetsLocal.length) { list.innerHTML=''; noP.classList.remove('hidden'); return; }
       noP.classList.add('hidden');
-      list.innerHTML = presets.map(p => {
+      list.innerHTML = presetsLocal.map(p => {
         const catCount = p.categories?.length||0;
         return `<div class="preset-row">
           <span class="preset-name">${esc(p.name)}</span>
@@ -989,34 +1309,79 @@
     }
 
     function loadPreset(id) {
-      socket.emit('host:load-preset', { id });
-      const p = presets.find(x=>x.id===id);
-      if (p) {
-        builderAnsCount = p.answerCount;
-        syncAnsCountBtns(p.answerCount, 'ans-count-btns');
-        syncAnsCountBtns(p.answerCount, 'builder-ans-btns');
-        builderChecked.clear();
-        if (Array.isArray(p.categories)) p.categories.forEach(catId => builderChecked.add(catId));
-        // Restore per-category answer selections
-        Object.keys(catAnswerMap).forEach(k => delete catAnswerMap[k]);
-        if (p.answerMap && typeof p.answerMap === 'object') {
-          Object.entries(p.answerMap).forEach(([catId, answers]) => { if (Array.isArray(answers)) catAnswerMap[catId] = answers; });
-        }
-        buildBuilderGrid(document.getElementById('builder-cat-search')?.value || '');
-        renderCatList(allCatKeys);
-        if (activeCat) renderQStartArea(activeCat);
-      }
+      const p = presetsLocal.find(x => x.id === id);
+      if (!p) return;
+      game.activePreset = p;
+      game.answerCount = p.answerCount;
+      game.wheelSegments = generateWheelSegments(p.categories.length ? p.categories : null);
+      game.wheelSegmentIndex = null; game.wheelSegment = null;
+      builderAnsCount = p.answerCount;
+      syncAnsCountBtns(p.answerCount, 'ans-count-btns');
+      syncAnsCountBtns(p.answerCount, 'builder-ans-btns');
+      builderChecked.clear();
+      if (Array.isArray(p.categories)) p.categories.forEach(catId => builderChecked.add(catId));
+      Object.keys(catAnswerMap).forEach(k => delete catAnswerMap[k]);
+      if (p.answerMap) Object.entries(p.answerMap).forEach(([catId, answers]) => { if (Array.isArray(answers)) catAnswerMap[catId] = answers; });
+      buildBuilderGrid(document.getElementById('builder-cat-search')?.value || '');
+      renderCatList(allCatKeys);
+      if (activeCat) renderQStartArea(activeCat);
+      pushGame();
       closeBuilder();
     }
 
     function deletePreset(id) {
       if (!confirm('Delete this preset?')) return;
-      socket.emit('host:delete-preset', { id });
+      presetsRef.child(id).remove();
     }
 
     document.getElementById('builder-modal').addEventListener('click', e => {
       if (e.target === document.getElementById('builder-modal')) closeBuilder();
     });
   </script>
+
+  <!-- ── AUTH GATE ─────────────────────────────────────────────────────────── -->
+  <div id="auth-gate" style="position:fixed;inset:0;z-index:9999;background:#09090b;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1.75rem;padding:2rem">
+    <div style="text-align:center">
+      <div style="font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:900;color:#fff;letter-spacing:-.01em">The Show<span style="color:#a78bfa">.</span></div>
+      <div style="font-size:.68rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#52525b;margin-top:.5rem">Host Panel</div>
+    </div>
+
+    <!-- Login panel -->
+    <div id="gate-login" style="display:flex;flex-direction:column;align-items:stretch;gap:.65rem;width:100%;max-width:300px">
+      <input id="gate-email" type="email" class="input" placeholder="Email" onkeydown="if(event.key==='Enter')loginWithEmail()">
+      <input id="gate-pass" type="password" class="input" placeholder="Password" onkeydown="if(event.key==='Enter')loginWithEmail()">
+      <button class="btn btn-primary btn-block" onclick="loginWithEmail()">Sign In</button>
+      <div style="text-align:center;color:var(--muted);font-size:.8rem">or</div>
+      <button onclick="signInWithGoogle()" style="display:flex;align-items:center;justify-content:center;gap:.65rem;background:#fff;border:none;border-radius:9px;padding:.7rem 1.5rem;cursor:pointer;font-weight:700;font-size:.9rem;color:#09090b;font-family:'DM Sans',sans-serif;width:100%">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+        Sign in with Google
+      </button>
+      <div style="text-align:center;font-size:.78rem;color:var(--muted)">New here? <a href="/signup" style="color:var(--purple-lt)">Create an account</a></div>
+    </div>
+
+    <!-- Subscribe panel -->
+    <div id="gate-subscribe" style="display:none;flex-direction:column;align-items:center;gap:1.1rem;width:100%;max-width:360px">
+      <p style="color:var(--muted);font-size:.88rem;text-align:center;line-height:1.6">You need an active membership to host.<br>Cancel anytime from your account.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;width:100%">
+        <button class="btn btn-primary" style="flex-direction:column;gap:.2rem;padding:1.1rem" onclick="startCheckout(PRICE_MONTHLY,this)">
+          <span style="font-size:1rem;font-weight:700">Monthly</span>
+          <span style="font-size:.78rem;opacity:.75;font-weight:400">$17 / month</span>
+        </button>
+        <button class="btn btn-green" style="flex-direction:column;gap:.2rem;padding:1.1rem" onclick="startCheckout(PRICE_YEARLY,this)">
+          <span style="font-size:1rem;font-weight:700">Annual</span>
+          <span style="font-size:.78rem;opacity:.8;font-weight:400">$199 / year</span>
+        </button>
+      </div>
+      <div style="font-size:.78rem;color:var(--muted)">
+        Signed in as <span id="gate-user-email" style="color:var(--text)"></span> ·
+        <button onclick="signOut()" style="background:none;border:none;color:var(--purple-lt);cursor:pointer;font-size:.78rem;padding:0">Sign out</button>
+      </div>
+    </div>
+
+    <!-- Loading panel -->
+    <div id="gate-loading" style="display:none;color:var(--muted);font-size:.88rem">Checking membership…</div>
+
+    <p id="auth-error" style="color:#f87171;font-size:.8rem;margin:0;display:none;text-align:center;max-width:300px"></p>
+  </div>
 </body>
 </html>

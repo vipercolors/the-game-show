@@ -9,7 +9,7 @@ const server = http.createServer(app);
 const io     = new Server(server);
 
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
-app.use(express.json());
+app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf; } }));
 
 // ── API ROUTES ─────────────────────────────────────────────────────────────
 app.get('/api/history', (req, res) => {
@@ -30,6 +30,118 @@ app.get('/api/game/:id', (req, res) => {
     res.status(404).json({ error: 'Game not found' });
   }
 });
+
+// ── STRIPE + MEMBERSHIP ────────────────────────────────────────────────────
+(function setupStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) return;
+
+  const cors    = require('cors');
+  const stripe  = require('stripe')(process.env.STRIPE_SECRET_KEY);
+  const admin   = require('firebase-admin');
+
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON)),
+      databaseURL: 'https://thegameshow-default-rtdb.firebaseio.com',
+    });
+  }
+  const adb = admin.database();
+
+  const ALLOWED = [
+    'https://thegameshow.web.app',
+    'https://thegameshow.firebaseapp.com',
+    'http://localhost:5000',
+  ];
+  const corsOpts = cors({ origin: ALLOWED, methods: ['GET','POST','OPTIONS'], credentials: true });
+  app.options('/api/stripe/*', corsOpts);
+  app.use('/api/stripe', corsOpts);
+
+  async function requireAuth(req, res, next) {
+    const token = (req.headers.authorization || '').replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+    try { req.user = await admin.auth().verifyIdToken(token); next(); }
+    catch { res.status(401).json({ error: 'Invalid token' }); }
+  }
+
+  // POST /api/stripe/checkout  → returns Stripe Checkout URL
+  app.post('/api/stripe/checkout', requireAuth, async (req, res) => {
+    try {
+      const { priceId } = req.body;
+      const { uid, email } = req.user;
+      let customerId;
+      const snap = await adb.ref(`users/${uid}/stripeCustomerId`).once('value');
+      if (snap.exists()) {
+        customerId = snap.val();
+      } else {
+        const customer = await stripe.customers.create({ email, metadata: { firebaseUID: uid } });
+        customerId = customer.id;
+        await adb.ref(`users/${uid}`).update({ stripeCustomerId: customerId, email });
+      }
+      const APP = process.env.APP_URL || 'https://thegameshow.web.app';
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        line_items: [{ price: priceId, quantity: 1 }],
+        success_url: `${APP}/host?stripe=success`,
+        cancel_url:  `${APP}/host`,
+        subscription_data: { metadata: { firebaseUID: uid } },
+      });
+      res.json({ url: session.url });
+    } catch (e) {
+      console.error('Checkout error:', e.message);
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // POST /api/stripe/portal  → returns Stripe Customer Portal URL
+  app.post('/api/stripe/portal', requireAuth, async (req, res) => {
+    try {
+      const snap = await adb.ref(`users/${req.user.uid}/stripeCustomerId`).once('value');
+      if (!snap.exists()) return res.status(400).json({ error: 'No billing account found' });
+      const APP = process.env.APP_URL || 'https://thegameshow.web.app';
+      const session = await stripe.billingPortal.sessions.create({
+        customer: snap.val(),
+        return_url: `${APP}/account`,
+      });
+      res.json({ url: session.url });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // POST /api/stripe/webhook  → Stripe event handler
+  app.post('/api/stripe/webhook', async (req, res) => {
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.rawBody, req.headers['stripe-signature'], process.env.STRIPE_WEBHOOK_SECRET
+      );
+    } catch (e) {
+      return res.status(400).send(`Webhook error: ${e.message}`);
+    }
+
+    const sub = event.data.object;
+    const subEvents = ['customer.subscription.created','customer.subscription.updated','customer.subscription.deleted'];
+    if (subEvents.includes(event.type)) {
+      const uid = sub.metadata?.firebaseUID;
+      if (uid) {
+        const isActive = sub.status === 'active' || sub.status === 'trialing';
+        await adb.ref(`users/${uid}/subscription`).set({
+          status:            sub.status,
+          priceId:           sub.items.data[0]?.price.id || null,
+          subscriptionId:    sub.id,
+          currentPeriodEnd:  sub.current_period_end,
+          cancelAtPeriodEnd: sub.cancel_at_period_end,
+        });
+        await admin.auth().setCustomUserClaims(uid, { host: isActive });
+      }
+    }
+    res.json({ received: true });
+  });
+
+  console.log('  Stripe membership routes enabled.');
+})();
 
 // ── QUESTION BANK ──────────────────────────────────────────────────────────
 const QUESTIONS = require('./questions-data.js');

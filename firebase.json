@@ -1,0 +1,19 @@
+{
+  "hosting": {
+    "public": "public",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      { "source": "/host",       "destination": "/host.html" },
+      { "source": "/vote",       "destination": "/vote.html" },
+      { "source": "/play",       "destination": "/play.html" },
+      { "source": "/display",    "destination": "/display.html" },
+      { "source": "/scoreboard", "destination": "/scoreboard.html" },
+      { "source": "/history",    "destination": "/history.html" },
+      { "source": "/signup",     "destination": "/signup.html" },
+      { "source": "/account",    "destination": "/account.html" }
+    ]
+  },
+  "database": {
+    "rules": "database.rules.json"
+  }
+}

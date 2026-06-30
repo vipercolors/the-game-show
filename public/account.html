@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account — The Game Show</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100dvh; padding:2rem; }
+    .wrap { width:100%; max-width:420px; }
+    .status-badge { display:inline-block; padding:.25rem .75rem; border-radius:999px; font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+    .status-active   { background:rgba(74,222,128,.15); color:#4ade80; border:1px solid rgba(74,222,128,.3); }
+    .status-inactive { background:rgba(244,63,94,.12); color:#f43f5e; border:1px solid rgba(244,63,94,.3); }
+    .info-row { display:flex; justify-content:space-between; align-items:center; padding:.65rem 0; border-bottom:1px solid var(--border); font-size:.88rem; }
+    .info-row:last-child { border-bottom:none; }
+    .info-label { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:2rem">
+      <a href="/" style="text-decoration:none">
+        <div class="wordmark" style="font-size:2rem">The<span class="accent">.</span> Game Show</div>
+      </a>
+    </div>
+
+    <div id="loading" style="text-align:center;color:var(--muted);font-size:.9rem;padding:2rem">Loading…</div>
+
+    <div id="content" style="display:none">
+      <div class="card" style="margin-bottom:1rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+          <div style="font-size:1rem;font-weight:700">Membership</div>
+          <span id="status-badge" class="status-badge"></span>
+        </div>
+        <div id="sub-info"></div>
+      </div>
+
+      <div id="manage-section" style="display:none;margin-bottom:1rem">
+        <button id="portal-btn" class="btn btn-ghost btn-block" onclick="openPortal()">Manage Billing in Stripe →</button>
+      </div>
+
+      <div id="subscribe-section" style="display:none;margin-bottom:1rem">
+        <p style="color:var(--muted);font-size:.85rem;margin-bottom:1rem;text-align:center">Subscribe to host unlimited game shows.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+          <button class="btn btn-primary" style="flex-direction:column;gap:.2rem;padding:1.1rem" onclick="startCheckout(PRICE_MONTHLY,this)">
+            <span style="font-size:1rem;font-weight:700">Monthly</span>
+            <span style="font-size:.78rem;opacity:.75;font-weight:400">$17 / month</span>
+          </button>
+          <button class="btn btn-green" style="flex-direction:column;gap:.2rem;padding:1.1rem" onclick="startCheckout(PRICE_YEARLY,this)">
+            <span style="font-size:1rem;font-weight:700">Annual</span>
+            <span style="font-size:.78rem;opacity:.8;font-weight:400">$199 / year</span>
+          </button>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:.5rem">
+        <a href="/host" class="btn btn-ghost btn-sm" style="text-decoration:none">← Host Panel</a>
+        <button class="btn btn-ghost btn-sm" onclick="auth.signOut().then(()=>window.location.href='/')">Sign Out</button>
+      </div>
+    </div>
+
+    <div id="not-signed-in" style="display:none;text-align:center">
+      <p style="color:var(--muted);margin-bottom:1.25rem">Sign in to view your account.</p>
+      <a href="/host" class="btn btn-primary">Sign In</a>
+    </div>
+
+    <div id="error-msg" style="display:none;color:#f87171;font-size:.85rem;text-align:center;margin-top:1rem"></div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script>
+    const RENDER_API    = 'https://the-game-show.onrender.com';
+    const PRICE_MONTHLY = 'price_MONTHLY'; // replace with your Stripe price ID
+    const PRICE_YEARLY  = 'price_YEARLY';  // replace with your Stripe price ID
+
+    firebase.initializeApp({
+      apiKey: "AIzaSyCmreMjOBtmFa9sy7c-CARsnCGBy2OUETk",
+      authDomain: "thegameshow.firebaseapp.com",
+      databaseURL: "https://thegameshow-default-rtdb.firebaseio.com",
+      projectId: "thegameshow",
+      storageBucket: "thegameshow.firebasestorage.app",
+      messagingSenderId: "561633423119",
+      appId: "1:561633423119:web:c0480a7e4502d4256a587a"
+    });
+    const auth = firebase.auth();
+    const db   = firebase.database();
+
+    const stripeSuccess = new URLSearchParams(location.search).get('stripe') === 'success';
+    if (stripeSuccess) history.replaceState({}, '', '/account');
+
+    auth.onAuthStateChanged(async user => {
+      document.getElementById('loading').style.display = 'none';
+      if (!user) {
+        document.getElementById('not-signed-in').style.display = '';
+        return;
+      }
+      document.getElementById('content').style.display = '';
+
+      const snap = await db.ref(`users/${user.uid}/subscription`).once('value');
+      const sub  = snap.val();
+      const isActive = sub && sub.status === 'active' && sub.currentPeriodEnd > Date.now() / 1000;
+
+      const badge = document.getElementById('status-badge');
+      badge.textContent = isActive ? 'Active' : (sub?.status || 'No plan');
+      badge.className   = 'status-badge ' + (isActive ? 'status-active' : 'status-inactive');
+
+      const infoEl = document.getElementById('sub-info');
+      if (sub) {
+        const end = new Date(sub.currentPeriodEnd * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        const planLabel = sub.priceId === PRICE_YEARLY ? 'Annual ($199/yr)' : sub.priceId === PRICE_MONTHLY ? 'Monthly ($17/mo)' : sub.priceId || 'Unknown';
+        infoEl.innerHTML = `
+          <div class="info-row"><span class="info-label">Plan</span><span>${planLabel}</span></div>
+          <div class="info-row"><span class="info-label">Email</span><span>${user.email || '—'}</span></div>
+          <div class="info-row"><span class="info-label">${sub.cancelAtPeriodEnd ? 'Cancels' : 'Renews'}</span><span>${end}</span></div>
+        `;
+        document.getElementById('manage-section').style.display = '';
+      } else {
+        infoEl.innerHTML = `<div class="info-row"><span class="info-label">Email</span><span>${user.email || '—'}</span></div>`;
+        document.getElementById('subscribe-section').style.display = '';
+      }
+    });
+
+    async function openPortal() {
+      const btn = document.getElementById('portal-btn');
+      btn.disabled = true; btn.textContent = 'Loading…';
+      try {
+        const token = await auth.currentUser.getIdToken(true);
+        const res   = await fetch(`${RENDER_API}/api/stripe/portal`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        window.location.href = data.url;
+      } catch (e) {
+        document.getElementById('error-msg').textContent = e.message;
+        document.getElementById('error-msg').style.display = '';
+        btn.disabled = false; btn.textContent = 'Manage Billing in Stripe →';
+      }
+    }
+
+    async function startCheckout(priceId, btn) {
+      btn.disabled = true;
+      const orig = btn.innerHTML;
+      btn.innerHTML = 'Loading…';
+      try {
+        const token = await auth.currentUser.getIdToken(true);
+        const res   = await fetch(`${RENDER_API}/api/stripe/checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ priceId }),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        window.location.href = data.url;
+      } catch (e) {
+        document.getElementById('error-msg').textContent = e.message;
+        document.getElementById('error-msg').style.display = '';
+        btn.disabled = false; btn.innerHTML = orig;
+      }
+    }
+  </script>
+</body>
+</html>
