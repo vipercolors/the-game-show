@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scoreboard — The Game Show</title>
   <link rel="stylesheet" href="style.css">
@@ -163,11 +164,25 @@
 
   <script src="wheel-segments.js"></script>
   <script src="sounds.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script>
-    const socket = io({ query: { role: 'display' } });
+    const firebaseConfig = {
+      apiKey: "AIzaSyCmreMjOBtmFa9sy7c-CARsnCGBy2OUETk",
+      authDomain: "thegameshow.firebaseapp.com",
+      databaseURL: "https://thegameshow-default-rtdb.firebaseio.com",
+      projectId: "thegameshow",
+      storageBucket: "thegameshow.firebasestorage.app",
+      messagingSenderId: "561633423119",
+      appId: "1:561633423119:web:c0480a7e4502d4256a587a"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     let state = {}, prevRanks = {};
     let scoresOnlyMode = false;
+    let scoreDeltasFirstLoad = true;
 
     function esc(s) {
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -176,18 +191,37 @@
     const OPT_COLORS  = ['#8b5cf6','#ec4899','#22d3ee','#4ade80','#f97316','#a855f7','#14b8a6','#eab308'];
     const OPT_LETTERS = ['A','B','C','D','E','F','G','H'];
 
-    socket.on('state', s => { state = s; render(s); });
-    socket.on('vote-tick', ({ votes, total }) => {
+    db.ref('votes').on('value', snap => {
+      const raw = snap.val() || {};
+      const votes = {};
+      Object.values(raw).forEach(opt => { votes[opt] = (votes[opt] || 0) + 1; });
+      const total = Object.keys(raw).length;
       state.votes = votes; state.voterCount = total;
       document.getElementById('sb-voter-count').textContent = total > 0 ? `${total} votes` : '';
       if (state.phase === 'voting' || state.phase === 'closed') renderBars(state.question, votes, total);
     });
-    socket.on('score-deltas', deltas => {
+
+    db.ref('scoreDeltas').on('value', snap => {
+      if (scoreDeltasFirstLoad) { scoreDeltasFirstLoad = false; return; }
+      const deltas = snap.val();
+      if (!deltas) return;
       setTimeout(() => {
         Object.entries(deltas).forEach(([name, pts], i) => {
           if (pts !== 0) setTimeout(() => spawnDelta(name, pts), i * 200);
         });
       }, 600);
+    });
+
+    db.ref('game').on('value', snap => {
+      const s = snap.val();
+      if (!s) return;
+      // Merge game state but preserve votes/voterCount set by the votes listener
+      const savedVotes = state.votes;
+      const savedVoterCount = state.voterCount;
+      state = s;
+      if (savedVotes !== undefined) state.votes = savedVotes;
+      if (savedVoterCount !== undefined) state.voterCount = savedVoterCount;
+      render(state);
     });
 
     function render(s) {

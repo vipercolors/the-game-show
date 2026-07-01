@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Display — The Game Show</title>
   <link rel="stylesheet" href="style.css">
@@ -438,9 +439,22 @@
   <script src="wheel-segments.js"></script>
   <script src="wheel.js"></script>
   <script src="sounds.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script>
-    const socket = io({ query: { role: 'display' } });
+    const firebaseConfig = {
+      apiKey: "AIzaSyCmreMjOBtmFa9sy7c-CARsnCGBy2OUETk",
+      authDomain: "thegameshow.firebaseapp.com",
+      databaseURL: "https://thegameshow-default-rtdb.firebaseio.com",
+      projectId: "thegameshow",
+      storageBucket: "thegameshow.firebasestorage.app",
+      messagingSenderId: "561633423119",
+      appId: "1:561633423119:web:c0480a7e4502d4256a587a"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     let displayWheel, prevPhase = null;
 
     function esc(s) {
@@ -495,26 +509,28 @@
     });
 
     let state = {};
-    // Track live vote totals from vote-tick so closed screen can show them
     let liveVotes = {}, liveTotalVotes = 0;
+    let prevContestants = null;
+    let scoreDeltasFirstLoad = true;
 
-    // ── SOCKET EVENTS ─────────────────────────────────────────────────────
-    socket.on('vote-tick', ({ votes, total }) => {
-      // Cache latest vote state
-      if (votes) { liveVotes = votes; liveTotalVotes = total; }
+    // ── FIREBASE LISTENERS ────────────────────────────────────────────────
+    db.ref('votes').on('value', snap => {
+      const raw = snap.val() || {};
+      const votes = {};
+      Object.values(raw).forEach(opt => { votes[opt] = (votes[opt] || 0) + 1; });
+      const total = Object.keys(raw).length;
+      liveVotes = votes;
+      liveTotalVotes = total;
 
       const el = document.getElementById('v-count');
       if (el) { el.textContent = total; el.style.transform = 'scale(1.35)'; setTimeout(() => el.style.transform = '', 200); }
 
-      // Update audience watching count corner
       const audNum = document.getElementById('audience-num');
       if (audNum) audNum.textContent = total;
       const audCorner = document.getElementById('audience-corner');
       if (audCorner) audCorner.classList.toggle('hidden', total === 0);
-      if (votes && total > 0 && state.question) {
-        // Update voting screen cards
+      if (state.question) {
         applyLiveVotesToContainer('v-options', state.question.options, votes, total);
-        // Also update closed screen cards if currently closed
         if (state.phase === 'closed') {
           applyLiveVotesToContainer('c-options', state.question.options, votes, total);
         }
@@ -537,9 +553,14 @@
       });
     }
 
-    socket.on('locked-in', lockedNames => { renderLockedIn(lockedNames, state.contestants); });
-    socket.on('contestant-joined', name => showJoinToast(name));
-    socket.on('score-deltas', deltas => {
+    db.ref('predictions').on('value', snap => {
+      renderLockedIn(Object.keys(snap.val() || {}), state.contestants);
+    });
+
+    db.ref('scoreDeltas').on('value', snap => {
+      if (scoreDeltasFirstLoad) { scoreDeltasFirstLoad = false; return; }
+      const deltas = snap.val();
+      if (!deltas) return;
       setTimeout(() => {
         Object.entries(deltas).forEach(([name, pts], i) => {
           if (pts !== 0) setTimeout(() => spawnDelta(name, pts), i * 250);
@@ -547,9 +568,17 @@
       }, 800);
     });
 
-    socket.on('state', s => {
+    db.ref('game').on('value', snap => {
+      const s = snap.val();
+      if (!s) return;
+      if (prevContestants !== null) {
+        const prevNames = new Set(Object.keys(prevContestants));
+        Object.keys(s.contestants || {}).forEach(name => {
+          if (!prevNames.has(name)) showJoinToast(name);
+        });
+      }
+      prevContestants = { ...(s.contestants || {}) };
       state = s;
-      // Reset live vote cache when a new round starts (voting phase entered fresh)
       if (s.phase === 'voting' && prevPhase !== 'voting') {
         liveVotes = {}; liveTotalVotes = 0;
         if (s.question) s.question.options.forEach(o => { liveVotes[o] = 0; });

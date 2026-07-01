@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Vote — The Game Show</title>
   <link rel="stylesheet" href="style.css">
@@ -14,7 +15,6 @@
     .code-input.error { border-color:var(--red); animation:shake .4s ease-out; }
     @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
 
-    /* Result bars */
     .r-row { display:flex; align-items:center; gap:.6rem; margin-bottom:.6rem; text-align:left; }
     .r-name { flex:1; font-size:.85rem; font-weight:500; }
     .r-pct  { font-weight:700; color:var(--amber); min-width:3rem; text-align:right; }
@@ -29,14 +29,12 @@
     .r-fill.opt-6 { background:linear-gradient(90deg,#14b8a6,#99f6e4); }
     .r-fill.opt-7 { background:linear-gradient(90deg,#eab308,#fef08a); }
 
-    /* Waiting notes */
     .waiting-notes { display:flex; align-items:center; justify-content:center; gap:.9rem; margin-bottom:1.2rem; }
     .waiting-note { font-size:1.6rem; color:var(--purple-lt); animation: noteBounce 1.6s ease-in-out infinite; }
     .waiting-note:nth-child(2) { color:var(--pink); animation-delay:.25s; font-size:1.2rem; }
     .waiting-note:nth-child(3) { color:var(--cyan); animation-delay:.5s; font-size:1.4rem; }
     @keyframes noteBounce { 0%,100% { transform: translateY(0) scale(1); opacity:.6; } 50% { transform: translateY(-8px) scale(1.15); opacity:1; } }
 
-    /* Full-screen vote celebration */
     #vote-celebration {
       position:fixed; inset:0; z-index:150;
       display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -50,18 +48,11 @@
     }
     @keyframes celebPop { from{transform:scale(.2) rotate(-12deg);opacity:0} 60%{transform:scale(1.18) rotate(3deg);opacity:1} to{transform:scale(1) rotate(0);opacity:1} }
     .cel-text { font-weight:800; font-size:1.5rem; margin-top:.75rem; opacity:0; animation:wsFade .4s .5s ease-out forwards; }
-    .cel-sub  { font-size:.9rem; margin-top:.3rem; opacity:.75; opacity:0; animation:wsFade .4s .7s ease-out forwards; }
+    .cel-sub  { font-size:.9rem; margin-top:.3rem; opacity:0; animation:wsFade .4s .7s ease-out forwards; }
     @keyframes wsFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
-
-    /* Mini confetti on vote */
-    .cel-particle {
-      position:absolute; border-radius:50%; pointer-events:none;
-      animation:particleBurst .9s ease-out forwards;
-    }
-    @keyframes particleBurst {
-      from { transform:translate(0,0) scale(1); opacity:1; }
-      to   { transform:translate(var(--tx),var(--ty)) scale(0); opacity:0; }
-    }
+    .cel-particle { position:absolute; border-radius:50%; pointer-events:none; animation:particleBurst .9s ease-out forwards; }
+    @keyframes particleBurst { from{transform:translate(0,0) scale(1);opacity:1} to{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0} }
+    @keyframes timerUrgency { 0%,100%{transform:none} 25%{transform:scale(1.03)} 75%{transform:scale(.98)} }
   </style>
 </head>
 <body>
@@ -71,13 +62,11 @@
     <span style="margin-left:auto;font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#71717a">Audience</span>
   </div>
 
-  <!-- TIMER BAR (top) — sits just below the nav bar -->
   <div id="timer-bar-wrap" class="hidden" style="position:fixed;top:36px;left:0;right:0;z-index:55">
     <div id="timer-bar" style="height:5px;background:var(--green);width:100%;transition:width .9s linear,background .5s"></div>
     <div id="timer-bar-num" style="position:absolute;right:.75rem;top:.35rem;font-size:.72rem;font-weight:700;color:var(--text);opacity:.7"></div>
   </div>
 
-  <!-- FULL-SCREEN VOTE CELEBRATION -->
   <div id="vote-celebration">
     <div id="cel-particles" style="position:absolute;inset:0;overflow:hidden;pointer-events:none"></div>
     <div class="cel-letter" id="cel-letter">A</div>
@@ -85,7 +74,6 @@
     <div class="cel-sub"  id="cel-sub">Waiting for results…</div>
   </div>
 
-  <!-- CODE ENTRY -->
   <div id="code-entry">
     <div class="wordmark" style="font-size:2.4rem;text-align:center">The Show<span class="accent">.</span></div>
     <p class="text-muted mt-2" style="font-size:.88rem;line-height:1.7;text-align:center">You're in the audience.<br>Enter the code shown on the <strong style="color:var(--text)">big screen</strong>.</p>
@@ -96,7 +84,6 @@
     <p id="code-error" class="text-red mt-2 hidden" style="font-size:.85rem;font-weight:600">Wrong code — try again.</p>
   </div>
 
-  <!-- WAITING -->
   <div id="waiting" class="hidden" style="text-align:center;width:100%;max-width:420px">
     <div class="waiting-notes">
       <span class="waiting-note">?</span>
@@ -105,13 +92,11 @@
     </div>
     <h2 style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--purple-lt)">You're in!</h2>
     <p class="text-muted mt-2" style="font-size:.9rem;line-height:1.6">Waiting for the next question…</p>
-    <!-- Audience vote total while waiting -->
     <div id="waiting-total" class="hidden mt-3" style="font-size:.82rem;color:var(--muted)">
       <span id="waiting-total-num" style="font-weight:700;color:var(--green)">0</span> people in the audience
     </div>
   </div>
 
-  <!-- QUESTION OPEN -->
   <div id="question-area" class="hidden" style="width:100%;max-width:420px">
     <div id="modifier-banner-vote" class="hidden modifier-banner"></div>
     <div style="font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.85rem">Pick your favourite</div>
@@ -119,7 +104,6 @@
     <div id="options-container" class="mt-4" style="display:flex;flex-direction:column;gap:.6rem"></div>
   </div>
 
-  <!-- VOTED -->
   <div id="voted" class="hidden" style="text-align:center;width:100%;max-width:420px">
     <div id="voted-badge" class="vote-confirmed-badge"></div>
     <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900">Vote locked in!</h2>
@@ -137,19 +121,43 @@
 
   <script src="wheel-segments.js"></script>
   <script src="sounds.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
   <script>
-    const socket = io({ query: { role: 'audience' } });
+    const firebaseConfig = {
+      apiKey: "AIzaSyCmreMjOBtmFa9sy7c-CARsnCGBy2OUETk",
+      authDomain: "thegameshow.firebaseapp.com",
+      databaseURL: "https://thegameshow-default-rtdb.firebaseio.com",
+      projectId: "thegameshow",
+      storageBucket: "thegameshow.firebasestorage.app",
+      messagingSenderId: "561633423119",
+      appId: "1:561633423119:web:c0480a7e4502d4256a587a"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const gameRef  = db.ref('game');
+    const votesRef = db.ref('votes');
+    const authRef  = db.ref('authorizedVoters');
+
+    // Persistent voter ID per device
+    let voterId = localStorage.getItem('tgs_voterId');
+    if (!voterId) {
+      voterId = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+      localStorage.setItem('tgs_voterId', voterId);
+    }
+
     let myVote = null, hasVoted = false, authorized = false;
-    let lastQuestion = null, audienceCount = 0;
-    let lastKnownCode = null;
+    let lastQuestion = null, lastKnownCode = null, prevPhase = null;
+
+    const LETTERS = ['A','B','C','D','E','F','G','H'];
+    const COLORS  = ['#8b5cf6','#ec4899','#22d3ee','#4ade80','#f97316','#a855f7','#14b8a6','#eab308'];
 
     function esc(s) {
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
-
-    const LETTERS = ['A','B','C','D','E','F','G','H'];
-    const COLORS  = ['#8b5cf6','#ec4899','#22d3ee','#4ade80','#f97316','#a855f7','#14b8a6','#eab308'];
 
     function show(id) {
       ['code-entry','waiting','question-area','voted'].forEach(s => document.getElementById(s).classList.add('hidden'));
@@ -158,27 +166,29 @@
 
     function enterCode() {
       const val = document.getElementById('code-input').value.trim();
-      socket.emit('audience:enter-code', val);
+      // Read current game code from Firebase and compare
+      gameRef.child('code').once('value').then(snap => {
+        const gameCode = snap.val();
+        if (val === gameCode) {
+          // Register this voter as authorized
+          authRef.child(voterId).set(true);
+          authorized = true;
+          lastKnownCode = gameCode;
+          document.getElementById('code-error').classList.add('hidden');
+          // Restore any existing vote for this voter
+          votesRef.child(voterId).once('value').then(vSnap => {
+            const existingVote = vSnap.val();
+            if (existingVote) { myVote = existingVote; hasVoted = true; }
+          });
+          show('waiting');
+        } else {
+          const input = document.getElementById('code-input');
+          input.classList.add('error');
+          document.getElementById('code-error').classList.remove('hidden');
+          setTimeout(() => input.classList.remove('error'), 500);
+        }
+      });
     }
-
-    socket.on('code-accepted', () => {
-      authorized = true;
-      document.getElementById('code-error').classList.add('hidden');
-      show('waiting');
-    });
-
-    socket.on('code-rejected', () => {
-      const input = document.getElementById('code-input');
-      input.classList.add('error');
-      document.getElementById('code-error').classList.remove('hidden');
-      setTimeout(() => input.classList.remove('error'), 500);
-    });
-
-    socket.on('vote-tick', ({ total }) => {
-      audienceCount = total;
-      const el = document.getElementById('waiting-total-num');
-      if (el) el.textContent = total;
-    });
 
     let timerBarInterval = null;
 
@@ -192,16 +202,11 @@
         bar.style.width = pct + '%';
         bar.style.background = pct > 50 ? 'var(--green)' : pct > 25 ? 'var(--amber)' : 'var(--red)';
         document.getElementById('timer-bar-num').textContent = Math.ceil(remaining) + 's';
-
-        // Urgency: flash/shake the option buttons when < 5s
         if (remaining <= 5 && remaining > 0) {
           document.querySelectorAll('.option-btn:not(:disabled)').forEach(b => {
-            b.style.animation = 'none';
-            b.offsetHeight;
-            b.style.animation = 'timerUrgency .4s ease-in-out';
+            b.style.animation = 'none'; b.offsetHeight; b.style.animation = 'timerUrgency .4s ease-in-out';
           });
         }
-
         if (remaining <= 0) clearInterval(timerBarInterval);
       }, 250);
     }
@@ -223,106 +228,94 @@
       el.innerHTML = `<span class="mod-emoji">${info.badge}</span> <strong style="color:${info.color}">${info.label}</strong> — ${info.desc}`;
     }
 
-    let prevPhase = null;
-    socket.on('state', s => {
-      // If the host generated a new code while we were authorized, force re-entry
+    function handleGameState(s) {
+      if (!s) return;
+      // If code changed while authorized, force re-entry
       if (authorized && s.code && s.code !== lastKnownCode) {
         authorized = false; hasVoted = false; myVote = null; stopTimerBar();
+        authRef.child(voterId).remove();
         show('code-entry');
       }
       if (s.code !== undefined) lastKnownCode = s.code || null;
       if (!authorized) return;
       if (s.question) lastQuestion = s.question;
 
-      // Update audience count
-      document.getElementById('waiting-total').classList.toggle('hidden', !s.voterCount);
-      document.getElementById('waiting-total-num').textContent = s.voterCount || 0;
+      const phase = s.phase;
 
-      if (s.phase === 'lobby') {
+      if (phase === 'lobby' || phase === 'spinning' || phase === 'wheel-result') {
         show('waiting'); hasVoted = false; myVote = null; stopTimerBar();
-      } else if (s.phase === 'voting') {
-        if (prevPhase !== 'voting') {
-          window.Sounds?.voteOpen();
-          // Reset vote state when freshly entering voting (handles revealed→voting shortcut)
-          hasVoted = false; myVote = null;
-        }
+      } else if (phase === 'voting') {
+        if (prevPhase !== 'voting') { window.Sounds?.voteOpen(); hasVoted = false; myVote = null; }
         if (s.timerDuration > 0 && s.timerStart) startTimerBar(s.timerDuration, s.timerStart);
         if (hasVoted) { show('voted'); document.getElementById('result-reveal').classList.add('hidden'); }
         else { show('question-area'); renderQ(s.question); renderModifierBanner(s.modifier); }
-      } else if (s.phase === 'closed') {
+      } else if (phase === 'closed') {
         stopTimerBar();
         document.getElementById('result-reveal').classList.add('hidden');
         if (!hasVoted) show('waiting');
-      } else if (s.phase === 'revealed') {
+      } else if (phase === 'revealed') {
         stopTimerBar(); show('voted'); renderResults(s.results, s.question, s.scoreMultiplier);
       } else {
         stopTimerBar(); show('waiting');
       }
-      prevPhase = s.phase;
+      prevPhase = phase;
+    }
+
+    // Listen to game state
+    gameRef.on('value', snap => { handleGameState(snap.val()); });
+
+    // Track audience count (number of authorized voters)
+    authRef.on('value', snap => {
+      const count = snap.numChildren();
+      document.getElementById('waiting-total').classList.toggle('hidden', count === 0);
+      document.getElementById('waiting-total-num').textContent = count;
     });
 
-    socket.on('vote-confirmed', option => {
-      myVote = option; hasVoted = true;
-
-      // Vibrate on mobile
-      if (navigator.vibrate) navigator.vibrate([60, 30, 80]);
-
-      const i = lastQuestion?.options?.indexOf(option) ?? -1;
-      const color  = i >= 0 ? COLORS[i % COLORS.length]   : '#8b5cf6';
-      const letter = i >= 0 ? LETTERS[i % LETTERS.length] : '?';
-
-      // Full-screen celebration
-      showVoteCelebration(letter, color, option);
-
-      // Then show the voted view
-      setTimeout(() => {
-        show('voted');
-        window.Sounds?.resultReveal();
-        document.getElementById('result-reveal').classList.add('hidden');
-
-        const badge = document.getElementById('voted-badge');
-        badge.style.background = color + '20';
-        badge.style.border     = `3px solid ${color}60`;
-        badge.style.color      = color;
-        badge.style.animation  = 'none'; badge.offsetHeight; badge.style.animation = '';
-        badge.textContent = letter;
-
-        const choiceEl = document.getElementById('voted-choice');
-        choiceEl.textContent = option;
-        choiceEl.style.color = color;
-      }, 1400);
-    });
+    function submitVote(option) {
+      votesRef.child(voterId).set(option).then(() => {
+        myVote = option; hasVoted = true;
+        if (navigator.vibrate) navigator.vibrate([60, 30, 80]);
+        const i = lastQuestion?.options?.indexOf(option) ?? -1;
+        const color  = i >= 0 ? COLORS[i % COLORS.length]  : '#8b5cf6';
+        const letter = i >= 0 ? LETTERS[i % LETTERS.length] : '?';
+        showVoteCelebration(letter, color, option);
+        setTimeout(() => {
+          show('voted');
+          window.Sounds?.resultReveal();
+          document.getElementById('result-reveal').classList.add('hidden');
+          const badge = document.getElementById('voted-badge');
+          badge.style.background = color + '20';
+          badge.style.border = `3px solid ${color}60`;
+          badge.style.color = color;
+          badge.style.animation = 'none'; badge.offsetHeight; badge.style.animation = '';
+          badge.textContent = letter;
+          const choiceEl = document.getElementById('voted-choice');
+          choiceEl.textContent = option;
+          choiceEl.style.color = color;
+        }, 1400);
+      });
+    }
 
     function showVoteCelebration(letter, color, option) {
       const overlay = document.getElementById('vote-celebration');
       overlay.style.background = color + '22';
-
       const letterEl = document.getElementById('cel-letter');
-      letterEl.textContent = letter;
-      letterEl.style.color = color;
+      letterEl.textContent = letter; letterEl.style.color = color;
       letterEl.style.textShadow = `0 0 60px ${color}`;
       letterEl.style.animation = 'none'; letterEl.offsetHeight; letterEl.style.animation = '';
-
       document.getElementById('cel-text').textContent = option;
       document.getElementById('cel-sub').textContent  = 'Vote locked in!';
-
-      // Mini particles burst
       const particles = document.getElementById('cel-particles');
       particles.innerHTML = '';
       for (let i = 0; i < 20; i++) {
         const p = document.createElement('div');
         p.className = 'cel-particle';
-        const size = 6 + Math.random() * 14;
-        const angle = Math.random() * 360;
-        const dist  = 80 + Math.random() * 160;
+        const size = 6 + Math.random() * 14, angle = Math.random() * 360, dist = 80 + Math.random() * 160;
         p.style.cssText = `width:${size}px;height:${size}px;background:${color};border-radius:${Math.random()>.5?'50%':'3px'};left:calc(50% - ${size/2}px);top:calc(50% - ${size/2}px);--tx:${Math.cos(angle*Math.PI/180)*dist}px;--ty:${Math.sin(angle*Math.PI/180)*dist}px;animation-delay:${Math.random()*.2}s;`;
         particles.appendChild(p);
       }
-
       overlay.classList.add('show');
-      setTimeout(() => {
-        overlay.classList.remove('show');
-      }, 1300);
+      setTimeout(() => overlay.classList.remove('show'), 1300);
     }
 
     function renderQ(q) {
@@ -339,7 +332,7 @@
         btn.innerHTML = `<span class="opt-letter" style="background:${c}20;color:${c};border:2px solid ${c}40">${l}</span><span>${esc(opt)}</span>`;
         btn.onclick = () => {
           document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
-          socket.emit('vote', opt);
+          submitVote(opt);
         };
         container.appendChild(btn);
       });
@@ -376,10 +369,5 @@
       if (e.key === 'Enter') enterCode();
     });
   </script>
-  <style>
-    @keyframes timerUrgency {
-      0%,100%{transform:none} 25%{transform:scale(1.03)} 75%{transform:scale(.98)}
-    }
-  </style>
 </body>
 </html>

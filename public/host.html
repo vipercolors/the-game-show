@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Host — The Game Show</title>
   <link rel="stylesheet" href="style.css">
@@ -348,8 +349,8 @@
     const OWNER_EMAIL   = 'vipercolors@gmail.com';
     // ↓ Set these after creating products in the Stripe dashboard
     const RENDER_API    = 'https://the-game-show.onrender.com';
-    const PRICE_MONTHLY = (typeof STRIPE_PRICE_MONTHLY !== 'undefined') ? STRIPE_PRICE_MONTHLY : 'price_MONTHLY';
-    const PRICE_YEARLY  = (typeof STRIPE_PRICE_YEARLY  !== 'undefined') ? STRIPE_PRICE_YEARLY  : 'price_YEARLY';
+    const PRICE_MONTHLY = 'price_1ToA3aBZjhBoXsU5RNjiSeRb';
+    const PRICE_YEARLY  = 'price_1ToA3bBZjhBoXsU5mL1JtTGI';
 
     const stripeSuccess = new URLSearchParams(location.search).get('stripe') === 'success';
     let stripeRetries   = 0;

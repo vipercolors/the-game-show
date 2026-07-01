@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Game History — The Game Show</title>
   <link rel="stylesheet" href="style.css">
@@ -36,16 +37,40 @@
     </div>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCmreMjOBtmFa9sy7c-CARsnCGBy2OUETk",
+      authDomain: "thegameshow.firebaseapp.com",
+      databaseURL: "https://thegameshow-default-rtdb.firebaseio.com",
+      projectId: "thegameshow",
+      storageBucket: "thegameshow.firebasestorage.app",
+      messagingSenderId: "561633423119",
+      appId: "1:561633423119:web:c0480a7e4502d4256a587a"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     function esc(s) {
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
     async function loadHistory() {
       try {
-        const res = await fetch('/api/history');
-        const games = await res.json();
+        const snap = await db.ref('history').once('value');
+        const historyObj = snap.val();
+        const games = historyObj
+          ? Object.values(historyObj)
+              .sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt))
+              .slice(0, 20)
+              .map(g => ({
+                date: g.savedAt,
+                round: g.round,
+                contestants: Object.values(g.contestants || {}).map(c => ({ name: c.name, score: c.score })),
+              }))
+          : [];
         const list = document.getElementById('history-list');
         const empty = document.getElementById('empty-state');
 
