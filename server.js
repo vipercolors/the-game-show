@@ -35,15 +35,21 @@ app.get('/api/game/:id', (req, res) => {
 (function setupStripe() {
   if (!process.env.STRIPE_SECRET_KEY) return;
 
-  const cors    = require('cors');
-  const stripe  = require('stripe')(process.env.STRIPE_SECRET_KEY);
-  const admin   = require('firebase-admin');
+  const cors   = require('cors');
+  const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+  const admin  = require('firebase-admin');
 
-  if (!admin.apps.length) {
-    admin.initializeApp({
-      credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON)),
-      databaseURL: 'https://thegameshow-default-rtdb.firebaseio.com',
-    });
+  try {
+    if (!admin.apps.length) {
+      const svcAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+      admin.initializeApp({
+        credential: admin.credential.cert(svcAccount),
+        databaseURL: 'https://thegameshow-default-rtdb.firebaseio.com',
+      });
+    }
+  } catch (e) {
+    console.error('Firebase Admin init failed:', e.message);
+    return;
   }
   const adb = admin.database();
 
