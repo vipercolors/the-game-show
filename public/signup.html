@@ -27,23 +27,29 @@
     </div>
 
     <div class="card">
-      <div class="field">
-        <label for="email">Email</label>
-        <input type="email" id="email" class="input" placeholder="you@example.com" autofocus>
-      </div>
-      <div class="field">
-        <label for="password">Password</label>
-        <input type="password" id="password" class="input" placeholder="Min 8 characters">
-      </div>
-      <button id="signup-btn" class="btn btn-primary btn-block" onclick="doSignup()">Create Account</button>
-      <div id="error" style="color:#f87171;font-size:.82rem;margin-top:.75rem;display:none"></div>
+      <div id="panel-form">
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" class="input" placeholder="you@example.com" autofocus>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="input" placeholder="Min 8 characters">
+        </div>
+        <button id="signup-btn" class="btn btn-primary btn-block" onclick="doSignup()">Create Account</button>
+        <div id="error" style="color:#f87171;font-size:.82rem;margin-top:.75rem;display:none"></div>
 
-      <div class="divider">or</div>
+        <div class="divider">or</div>
 
-      <button class="g-btn" onclick="googleSignup()">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-        Continue with Google
-      </button>
+        <button class="g-btn" onclick="googleSignup()">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+      </div>
+
+      <div id="panel-sent" style="display:none;text-align:center;color:var(--muted);font-size:.88rem;line-height:1.6">
+        Check your inbox — we sent a verification link to<br><strong id="sent-email" style="color:var(--text)"></strong>
+      </div>
     </div>
 
     <p style="text-align:center;font-size:.82rem;color:var(--muted);margin-top:1.25rem">
@@ -65,7 +71,7 @@
     const auth = firebase.auth();
 
     auth.onAuthStateChanged(user => {
-      if (user) window.location.href = '/host';
+      if (user && user.emailVerified) window.location.href = '/host';
     });
 
     function showErr(msg) {
@@ -88,7 +94,12 @@
       if (!email || !pass) { showErr('Please fill in all fields.'); return; }
       btn.disabled = true; btn.textContent = 'Creating account…';
       try {
-        await auth.createUserWithEmailAndPassword(email, pass);
+        const cred = await auth.createUserWithEmailAndPassword(email, pass);
+        await cred.user.sendEmailVerification();
+        await auth.signOut();
+        document.getElementById('sent-email').textContent = email;
+        document.getElementById('panel-form').style.display = 'none';
+        document.getElementById('panel-sent').style.display = 'block';
       } catch (e) {
         showErr(errMap[e.code] || 'Something went wrong. Try again.');
         btn.disabled = false; btn.textContent = 'Create Account';

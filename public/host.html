@@ -356,7 +356,7 @@
     let stripeRetries   = 0;
 
     function gatePanel(id) {
-      ['gate-login','gate-subscribe','gate-loading'].forEach(p => {
+      ['gate-login','gate-verify','gate-subscribe','gate-loading'].forEach(p => {
         const el = document.getElementById(p);
         el.style.display = (p === id) ? 'flex' : 'none';
       });
@@ -365,6 +365,12 @@
     async function checkSubscription(user) {
       const gate = document.getElementById('auth-gate');
       if (!user) { gate.style.display = 'flex'; gatePanel('gate-login'); return; }
+      if (!user.emailVerified) {
+        gate.style.display = 'flex';
+        document.getElementById('gate-verify-email').textContent = user.email || '';
+        gatePanel('gate-verify');
+        return;
+      }
       if (user.email === OWNER_EMAIL) { gate.style.display = 'none'; return; }
       gate.style.display = 'flex';
       gatePanel('gate-loading');
@@ -442,6 +448,22 @@
     }
 
     function signOut() { auth.signOut(); }
+
+    async function resendVerification(btn) {
+      btn.disabled = true;
+      try {
+        await auth.currentUser.sendEmailVerification();
+        btn.textContent = 'Sent!';
+      } catch {
+        btn.textContent = 'Failed — try again';
+        btn.disabled = false;
+      }
+    }
+
+    async function refreshVerification() {
+      await auth.currentUser.reload();
+      checkSubscription(auth.currentUser);
+    }
 
     const gameRef    = db.ref('game');
     const votesRef   = db.ref('votes');
@@ -1375,6 +1397,16 @@
       </div>
       <div style="font-size:.78rem;color:var(--muted)">
         Signed in as <span id="gate-user-email" style="color:var(--text)"></span> ·
+        <button onclick="signOut()" style="background:none;border:none;color:var(--purple-lt);cursor:pointer;font-size:.78rem;padding:0">Sign out</button>
+      </div>
+    </div>
+
+    <!-- Verify email panel -->
+    <div id="gate-verify" style="display:none;flex-direction:column;align-items:center;gap:1rem;width:100%;max-width:320px">
+      <p style="color:var(--muted);font-size:.88rem;text-align:center;line-height:1.6">Verify your email to continue.<br>We sent a link to <span id="gate-verify-email" style="color:var(--text)"></span>.</p>
+      <button class="btn btn-primary btn-block" onclick="resendVerification(this)">Resend Email</button>
+      <div style="font-size:.78rem;color:var(--muted)">
+        <a href="#" onclick="refreshVerification();return false" style="color:var(--purple-lt)">I've verified, refresh</a> ·
         <button onclick="signOut()" style="background:none;border:none;color:var(--purple-lt);cursor:pointer;font-size:.78rem;padding:0">Sign out</button>
       </div>
     </div>
