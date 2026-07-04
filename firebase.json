@@ -10,7 +10,8 @@
       { "source": "/scoreboard", "destination": "/scoreboard.html" },
       { "source": "/history",    "destination": "/history.html" },
       { "source": "/signup",     "destination": "/signup.html" },
-      { "source": "/account",    "destination": "/account.html" }
+      { "source": "/account",    "destination": "/account.html" },
+      { "source": "/auth-action","destination": "/auth-action.html" }
     ]
   },
   "database": {

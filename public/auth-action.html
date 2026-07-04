@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Game Show</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100dvh; padding:2rem; }
+    .form-card { width:100%; max-width:360px; }
+    .panel { display:none; flex-direction:column; align-items:center; gap:.85rem; text-align:center; }
+    .panel.on { display:flex; }
+    .spinner { width:30px; height:30px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--purple); animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .icon { width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; }
+    .icon-success { background:rgba(74,222,128,.12); border:1px solid rgba(74,222,128,.35); color:var(--green); }
+    .icon-error   { background:rgba(244,63,94,.12); border:1px solid rgba(244,63,94,.35); color:var(--red); }
+    .panel-title { font-size:1.05rem; font-weight:700; color:var(--text); }
+    .panel-sub { font-size:.85rem; color:var(--muted); line-height:1.6; }
+  </style>
+</head>
+<body>
+  <div class="form-card">
+    <div style="text-align:center;margin-bottom:2rem">
+      <a href="/" style="text-decoration:none">
+        <div class="wordmark" style="font-size:2rem">The<span class="accent">.</span> Game Show</div>
+      </a>
+    </div>
+
+    <div class="card">
+      <!-- Loading -->
+      <div class="panel on" id="panel-loading">
+        <div class="spinner"></div>
+        <div class="panel-sub">Verifying…</div>
+      </div>
+
+      <!-- Verify email: success -->
+      <div class="panel" id="panel-verify-success">
+        <div class="icon icon-success">✓</div>
+        <div class="panel-title">Email Verified</div>
+        <div class="panel-sub">Your account is ready to go.</div>
+        <button class="btn btn-primary btn-block" id="verify-continue-btn">Continue to Host →</button>
+      </div>
+
+      <!-- Reset password: form -->
+      <div class="panel" id="panel-reset-form">
+        <div class="panel-title">Set a New Password</div>
+        <input type="password" id="reset-pass" class="input" placeholder="New password (min 6 characters)">
+        <button class="btn btn-primary btn-block" id="reset-submit-btn">Update Password</button>
+        <div id="reset-error" style="color:#f87171;font-size:.82rem;display:none"></div>
+      </div>
+
+      <!-- Reset password: success -->
+      <div class="panel" id="panel-reset-success">
+        <div class="icon icon-success">✓</div>
+        <div class="panel-title">Password Updated</div>
+        <div class="panel-sub">You can now sign in with your new password.</div>
+        <button class="btn btn-primary btn-block" id="reset-continue-btn">Continue to Host →</button>
+      </div>
+
+      <!-- Error -->
+      <div class="panel" id="panel-error">
+        <div class="icon icon-error">✕</div>
+        <div class="panel-title">Link Expired</div>
+        <div class="panel-sub" id="error-sub">This link is invalid or has already been used.</div>
+        <button class="btn btn-primary btn-block" id="error-continue-btn">Back to Host →</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script>
+    firebase.initializeApp({
+      apiKey: "AIzaSyCmreMjOBtmFa9sy7c-CARsnCGBy2OUETk",
+      authDomain: "thegameshow.firebaseapp.com",
+      projectId: "thegameshow",
+      storageBucket: "thegameshow.firebasestorage.app",
+      messagingSenderId: "561633423119",
+      appId: "1:561633423119:web:c0480a7e4502d4256a587a"
+    });
+    const auth = firebase.auth();
+
+    const params      = new URLSearchParams(location.search);
+    const mode        = params.get('mode');
+    const oobCode     = params.get('oobCode');
+    const continueUrl = params.get('continueUrl') || '/host';
+
+    function showPanel(id) {
+      ['panel-loading','panel-verify-success','panel-reset-form','panel-reset-success','panel-error'].forEach(p => {
+        document.getElementById(p).classList.toggle('on', p === id);
+      });
+    }
+
+    function showError(msg) {
+      document.getElementById('error-sub').textContent = msg || 'This link is invalid or has already been used.';
+      showPanel('panel-error');
+    }
+
+    async function run() {
+      if (!oobCode || !mode) { showError(); return; }
+
+      if (mode === 'verifyEmail' || mode === 'recoverEmail') {
+        try {
+          await auth.applyActionCode(oobCode);
+          showPanel('panel-verify-success');
+        } catch (e) {
+          showError();
+        }
+      } else if (mode === 'resetPassword') {
+        try {
+          await auth.verifyPasswordResetCode(oobCode);
+          showPanel('panel-reset-form');
+        } catch (e) {
+          showError();
+        }
+      } else {
+        showError();
+      }
+    }
+
+    document.getElementById('reset-submit-btn').addEventListener('click', async () => {
+      const pass = document.getElementById('reset-pass').value;
+      const btn  = document.getElementById('reset-submit-btn');
+      const err  = document.getElementById('reset-error');
+      err.style.display = 'none';
+      if (!pass || pass.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.style.display = ''; return; }
+      btn.disabled = true; btn.textContent = 'Updating…';
+      try {
+        await auth.confirmPasswordReset(oobCode, pass);
+        showPanel('panel-reset-success');
+      } catch (e) {
+        err.textContent = 'Something went wrong. Try requesting a new reset link.';
+        err.style.display = '';
+        btn.disabled = false; btn.textContent = 'Update Password';
+      }
+    });
+
+    document.getElementById('verify-continue-btn').addEventListener('click', () => { window.location.href = continueUrl; });
+    document.getElementById('reset-continue-btn').addEventListener('click', () => { window.location.href = continueUrl; });
+    document.getElementById('error-continue-btn').addEventListener('click', () => { window.location.href = '/host'; });
+
+    run();
+  </script>
+</body>
+</html>
